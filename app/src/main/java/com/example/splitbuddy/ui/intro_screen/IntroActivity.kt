@@ -1,5 +1,6 @@
 package com.example.splitbuddy.ui.intro_screen
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,12 +20,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import com.example.splitbuddy.R
+import com.example.splitbuddy.ui.login_screen.LoginActivity
 import com.example.splitbuddy.ui.theme.SplitBuddyTheme
+import kotlin.jvm.java
 
 class IntroActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +40,12 @@ class IntroActivity : ComponentActivity() {
                 OnboardingScreen()
             }
         }
+        hideSystemBars()
+    }
+    private fun hideSystemBars() {
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        // Hide only the navigation bar (bottom buttons)
+        windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
     }
 }
 
@@ -42,12 +53,13 @@ class IntroActivity : ComponentActivity() {
 @Composable
 fun OnboardingScreen() {
 
+    val context = LocalContext.current
     val pagerState = rememberPagerState(pageCount = { 3 })
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
 
         HorizontalPager(
@@ -80,7 +92,10 @@ fun OnboardingScreen() {
         PagerIndicator(pagerState)
 
         Button(
-            onClick = { },
+            onClick = {
+                val intent = Intent(context, LoginActivity::class.java)
+                context.startActivity(intent)
+            },
             modifier = Modifier
                 .padding(24.dp)
                 .fillMaxWidth(),

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "203002226684",
+    "project_id": "splitbuddy-12250",
+    "storage_bucket": "splitbuddy-12250.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203002226684:android:1a3f6277a5eafe776cf479",
+        "android_client_info": {
+          "package_name": "com.example.splitbuddy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "203002226684-en0rvsi5lucri5udadhbh2guabs60ikd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.splitbuddy",
+            "certificate_hash": "5965e2ee94b10ca71ceb43480e5ad79f29cc98a0"
+          }
+        },
+        {
+          "client_id": "203002226684-mhat13a36eomecekr6k84rcjjrfqmphf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4LXUCUsg7BbUnH_xXyr5iKjIHEgTY2AQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "203002226684-484ktn5jl3uiep954m97n6cphvl69p5h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
