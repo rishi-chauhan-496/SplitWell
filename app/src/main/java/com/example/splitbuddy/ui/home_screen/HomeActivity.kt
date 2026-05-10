@@ -39,6 +39,7 @@ import com.example.splitbuddy.ui.profile.ProfileEditScreen
 import com.example.splitbuddy.ui.theme.SplitBuddyTheme
 import org.koin.androidx.compose.koinViewModel
 import androidx.core.content.edit
+import com.example.splitbuddy.ui.profile.ProfileScreen
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -187,7 +188,16 @@ fun MainScreen() {
                     TopBarState(
                         title = "My Profile",
                         isVisible = true,
-                        showBack = false
+                        showBack = false,
+                        actions = {
+                            IconButton(
+                                onClick = {
+                                    navController.navigate(Screen.ProfileEditScreen.route)
+                                }
+                            ) {
+                                Icon(Icons.Default.Edit, contentDescription = "Edit Profile")
+                            }
+                        }
                     )
                 )
             }
@@ -195,9 +205,9 @@ fun MainScreen() {
             route == Screen.ProfileEditScreen.route -> {
                 topBarViewModel.update(
                     TopBarState(
-                        title = "Complete Profile",
+                        title = "Edit Profile",
                         isVisible = true,
-                        showBack = false
+                        showBack = true
                     )
                 )
             }
@@ -242,9 +252,8 @@ fun MainScreen() {
             }
 
             composable(BottomNavItem.Profile.route) {
-                ProfileEditScreen(
-                    userId = ownerID,
-                    onSaved = { /* stay on profile after save */ }
+                ProfileScreen(
+                    userId = ownerID
                 )
             }
 
@@ -323,12 +332,15 @@ fun MainScreen() {
                 ProfileEditScreen(
                     userId = ownerID,
                     onSaved = {
-                        // Clear the new login flag
                         context.getSharedPreferences("SplitBuddyPrefs", android.content.Context.MODE_PRIVATE)
                             .edit { putBoolean("isNewLogin", false) }
 
-                        navController.navigate(BottomNavItem.Groups.route) {
-                            popUpTo(Screen.ProfileEditScreen.route) { inclusive = true }
+                        if (isNewLogin) {
+                            navController.navigate(BottomNavItem.Groups.route) {
+                                popUpTo(Screen.ProfileEditScreen.route) { inclusive = true }
+                            }
+                        } else {
+                            navController.popBackStack()
                         }
                     }
                 )

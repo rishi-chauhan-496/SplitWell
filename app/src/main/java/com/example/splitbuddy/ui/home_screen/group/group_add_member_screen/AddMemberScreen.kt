@@ -43,13 +43,6 @@ fun AddMemberScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        Text(
-            text = stringResource(R.string.add_member_button),
-            color = MaterialTheme.colorScheme.secondary,
-            fontSize = 36.sp,
-            fontWeight = FontWeight.Bold
-        )
-
         Spacer(modifier = Modifier.height(4.dp))
 
         val count = state.value.selectedUserIds.size
@@ -60,7 +53,7 @@ fun AddMemberScreen(
                 else -> stringResource(R.string.add_member_selected_plural, count)
             },
             color = if (count == 0) Color.Gray else Primary,
-            fontSize = 14.sp
+            fontSize = 18.sp
         )
 
         Spacer(modifier = Modifier.height(16.dp))

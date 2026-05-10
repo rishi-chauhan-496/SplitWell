@@ -27,13 +27,26 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.splitbuddy.R
+import com.example.splitbuddy.ui.home_screen.HomeActivity
 import com.example.splitbuddy.ui.login_screen.LoginActivity
 import com.example.splitbuddy.ui.theme.SplitBuddyTheme
+import com.google.firebase.auth.auth
 import kotlin.jvm.java
 
 class IntroActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val prefs = getSharedPreferences("SplitBuddyPrefs", MODE_PRIVATE)
+        val savedUserId = prefs.getString("userId", null)
+        val auth = com.google.firebase.Firebase.auth
+
+        if (auth.currentUser != null && !savedUserId.isNullOrBlank()) {
+            startActivity(Intent(this, HomeActivity::class.java))
+            finish()
+            return
+        }
+
         enableEdgeToEdge()
         setContent {
             SplitBuddyTheme {

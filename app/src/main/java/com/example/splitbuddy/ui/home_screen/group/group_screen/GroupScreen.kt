@@ -76,7 +76,7 @@ fun GroupScreen(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     GroupActionButton("Add Member",  com.example.splitbuddy.R.drawable.group,      onAddMember,  Modifier.weight(1f))
                     GroupActionButton("Settlement",  com.example.splitbuddy.R.drawable.settlement, onSettlement, Modifier.weight(1f))
@@ -115,16 +115,21 @@ private fun GroupActionButton(label: String, icon: Int, onClick: () -> Unit, mod
             containerColor = Color.White.copy(alpha = 0.15f),
             contentColor = Color.White
         ),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.5f))
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
+        contentPadding = PaddingValues(2.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally ) {
             Icon(
                 painter = painterResource(icon),
                 contentDescription = label,
                 modifier = Modifier.size(18.dp),
                 tint = Color.White
             )
-            Text(label, fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Medium)
+            Text(label, fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                softWrap = false)
         }
     }
 }

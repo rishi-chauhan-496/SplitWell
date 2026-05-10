@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "203002226684-kcfahjbspihugkndsi7dqic08m0e4til.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.splitbuddy",
+            "certificate_hash": "aeef34b315f780e597fb68a12e7e4bf35268926f"
+          }
+        },
+        {
           "client_id": "203002226684-mhat13a36eomecekr6k84rcjjrfqmphf.apps.googleusercontent.com",
           "client_type": 3
         }

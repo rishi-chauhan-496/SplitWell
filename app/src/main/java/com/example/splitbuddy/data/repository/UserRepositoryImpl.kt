@@ -30,7 +30,13 @@ class UserRepositoryImpl(
     }
 
     override suspend fun getUserById(userId: String): Boolean {
-        TODO("Not yet implemented")
+        return try {
+            val user = userApiInterface.getUserById(userId)
+            userQuery.insertUser(user)
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
 
     override suspend fun updateUser(userId: String, request: UpdateUserRequest): Boolean {
@@ -42,6 +48,15 @@ class UserRepositoryImpl(
             true
         } catch (_: Exception) {
             false
+        }
+    }
+
+    suspend fun syncUsers(userIds: List<String>) {
+        userIds.forEach { userId ->
+            try {
+                val user = userApiInterface.getUserById(userId)
+                userQuery.insertUser(user)
+            } catch (_: Exception) { }
         }
     }
 

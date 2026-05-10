@@ -40,18 +40,10 @@ fun GroupCreationScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        Text(
-            text = stringResource(R.string.Group_Creation_Screen_Title),
-            color = MaterialTheme.colorScheme.secondary,
-            fontSize = 36.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 36.sp
-        )
-
         Spacer(modifier = Modifier.height(8.dp))
 
         AppTextField(
-            label = "",
+            label = stringResource(R.string.title),
             value = uiState.groupName,
             onValueChange = viewModel::onGroupNameChange
         )

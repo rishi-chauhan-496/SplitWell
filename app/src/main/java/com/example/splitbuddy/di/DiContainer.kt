@@ -111,15 +111,19 @@ object DIContainer {
         single<GroupRepository> {
             GroupRepositoryImpl(
                 groupApiInterface = get(),
-                tripsQuery = get(),
-                tripManagerQuery = get()
+                tripsQuery        = get(),
+                tripManagerQuery  = get(),
+                userQuery         = get(),
+                userApiInterface  = get()
             )
         }
         single<ExpenseRepository> {
             ExpenseRepositoryImpl(
                 expenseApiInterface = get(),
-                expenseQuery = get(),
-                expenseShareQuery = get()
+                expenseQuery        = get(),
+                expenseShareQuery   = get(),
+                userQuery           = get(),
+                userApiInterface    = get()
             )
         }
 
