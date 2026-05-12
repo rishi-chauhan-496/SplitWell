@@ -3,8 +3,11 @@ package com.example.splitbuddy.ui.home_screen.group.group_creation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.splitbuddy.data.remote.group.CreateGroupRequest
+import com.example.splitbuddy.data.util.Resource
+import com.example.splitbuddy.data.util.toWriteMessage
 import com.example.splitbuddy.domain.usecase.group.CreateGroupUseCase
 import com.example.splitbuddy.domain.usecase.user.GetAllUserUseCase
+import com.example.splitbuddy.ui.util.SnackbarController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -61,28 +64,28 @@ class GroupCreationViewModel(
         }
     }
 
-    fun createGroup(managerId: String) {
-        val state = _uiState.value
-
+    fun createGroup(userId: String) {
         viewModelScope.launch {
-            val request = CreateGroupRequest(
-                groupTitle = state.groupName,
-                managerUserId = managerId,
-                memberUserIds = state.selectedUserIds.toList()
+            _uiState.update { it.copy(isLoading = true) }
+
+            val result = createGroupUseCase(
+                CreateGroupRequest(
+                    groupTitle = uiState.value.groupName,
+                    managerUserId = userId,
+                    memberUserIds = uiState.value.selectedUserIds.map { it }
+                )
             )
 
-            runCatching { createGroupUseCase(request) }
-                .onSuccess {
-                    _uiState.update { it.copy(success = true) }
+            when (result) {
+                is Resource.Success -> _uiState.update {
+                    it.copy(isLoading = false, success = true)
                 }
-                .onFailure { throwable ->
-                    _uiState.update { state ->
-                        state.copy(
-                            error = throwable.message,
-                            isLoading = false
-                        )
-                    }
+                is Resource.Error -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    SnackbarController.show(result.error.toWriteMessage())
                 }
+                else -> {}
+            }
         }
     }
 

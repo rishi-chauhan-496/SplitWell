@@ -3,11 +3,15 @@ package com.example.splitbuddy.ui.home_screen.group.group_updating
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.splitbuddy.data.remote.group.UpdateGroupRequest
+import com.example.splitbuddy.data.util.Resource
+import com.example.splitbuddy.data.util.toWriteMessage
 import com.example.splitbuddy.domain.usecase.group.DeleteGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.UpdateGroupUseCase
+import com.example.splitbuddy.ui.util.SnackbarController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class GroupUpdatingViewModel(
@@ -54,60 +58,22 @@ class GroupUpdatingViewModel(
         }
     }
 
-    fun update(groupId: String, groupName: String) {
-
-        if (groupId.isBlank() || groupName.isBlank()) {
-            _uiState.value = _uiState.value.copy(
-                error = "Group name cannot be empty"
-            )
-            return
-        }
-
+    fun update(groupId: String, name: String) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                isLoading = true,
-                error = null
-            )
-
-            try {
-                updateGroupUseCase(groupId, UpdateGroupRequest(groupName))
-
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    isUpdated = true
-                )
-
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Update failed"
-                )
+            when (val result = updateGroupUseCase(groupId, UpdateGroupRequest(groupTitle = name))) {
+                is Resource.Success -> _uiState.update { it.copy(isUpdated = true) }
+                is Resource.Error   -> SnackbarController.show(result.error.toWriteMessage())
+                else -> {}
             }
         }
     }
 
     fun delete(groupId: String) {
-        if (groupId.isBlank()) return
-
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                isLoading = true,
-                error = null
-            )
-
-            try {
-                deleteGroupUseCase(groupId)
-
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    isDeleted = true
-                )
-
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Delete failed"
-                )
+            when (val result = deleteGroupUseCase(groupId)) {
+                is Resource.Success -> _uiState.update { it.copy(isDeleted = true) }
+                is Resource.Error   -> SnackbarController.show(result.error.toWriteMessage())
+                else -> {}
             }
         }
     }
