@@ -72,7 +72,7 @@ class GroupCreationViewModel(
                 CreateGroupRequest(
                     groupTitle = uiState.value.groupName,
                     managerUserId = userId,
-                    memberUserIds = uiState.value.selectedUserIds.map { it }
+                    memberUserIds = uiState.value.selectedUserIds.toList()
                 )
             )
 

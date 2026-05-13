@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.example.splitbuddy.R
 import com.example.splitbuddy.ui.components.EmptyStateView
 import com.example.splitbuddy.ui.components.LoadingView
+import com.example.splitbuddy.ui.components.OfflineBanner
 import com.example.splitbuddy.ui.home_screen.group.GroupListCard
 import com.example.splitbuddy.ui.theme.Primary
 import org.koin.androidx.compose.koinViewModel
@@ -30,38 +31,42 @@ fun GroupsScreen(
     val state = viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.loadGroups(userId)
+        viewModel.init(userId)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        when {
-            state.value.isLoading -> LoadingView()
+        Column(modifier = Modifier.fillMaxSize()) {
 
-            state.value.error != null -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "Something went wrong.\n${state.value.error}",
-                        color = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                }
-            }
+            OfflineBanner(isOffline = state.value.isOffline)
+            when {
+                state.value.isLoading -> LoadingView()
 
-            state.value.groups.isEmpty() -> EmptyStateView(message = "No groups yet\nTap + to create your first group")
-
-            else -> {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp)
-                ) {
-                    items(state.value.groups) { group ->
-                        GroupListCard(
-                            groupName    = group.groupName,
-                            totalMember  = group.totalMember,
-                            totalExpense = group.totalExpense,
-                            totalAmount  = group.totalAmount,
-                            createdAt    = group.createdAt,
-                            onClick      = { onNext(group.id) }
+                state.value.error != null -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "Something went wrong.\n${state.value.error}",
+                            color = MaterialTheme.colorScheme.surfaceVariant
                         )
+                    }
+                }
+
+                state.value.groups.isEmpty() -> EmptyStateView(message = "No groups yet\nTap + to create your first group")
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp)
+                    ) {
+                        items(state.value.groups) { group ->
+                            GroupListCard(
+                                groupName = group.groupName,
+                                totalMember = group.totalMember,
+                                totalExpense = group.totalExpense,
+                                totalAmount = group.totalAmount,
+                                createdAt = group.createdAt,
+                                onClick = { onNext(group.id) }
+                            )
+                        }
                     }
                 }
             }

@@ -226,6 +226,7 @@ class ExpenseViewModel(
 
     fun saveExpense(groupId: String) {
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
             val s = _state.value
 
             val shares = s.members.mapIndexed { index, member ->
@@ -264,9 +265,7 @@ class ExpenseViewModel(
                     _state.update { it.copy(isLoading = false) }
                     SnackbarController.show(result.error.toWriteMessage())
                 }
-                else -> {
-                    _state.value = ExpenseUiState()
-                }
+                else -> { }
             }
         }
     }
