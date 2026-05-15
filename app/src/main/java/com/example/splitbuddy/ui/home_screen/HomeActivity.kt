@@ -42,6 +42,7 @@ import com.example.splitbuddy.ui.profile.ProfileEditScreen
 import com.example.splitbuddy.ui.theme.SplitBuddyTheme
 import org.koin.androidx.compose.koinViewModel
 import androidx.core.content.edit
+import com.example.splitbuddy.ui.home_screen.dashboard.DashboardScreen
 import com.example.splitbuddy.ui.profile.ProfileScreen
 import com.example.splitbuddy.ui.util.SnackbarController
 
@@ -217,6 +218,12 @@ fun MainScreen() {
                 )
             }
 
+            route == BottomNavItem.Dashboard.route -> {
+                topBarViewModel.update(
+                    TopBarState(title = "Home", isVisible = true)
+                )
+            }
+
             else -> {
                 topBarViewModel.update(TopBarState(isVisible = false))
             }
@@ -251,7 +258,7 @@ fun MainScreen() {
         NavHost(
             navController = navController,
             startDestination = if (isNewLogin) Screen.ProfileEditScreen.route
-                                else BottomNavItem.Groups.route,
+                                else BottomNavItem.Dashboard.route,
             modifier = Modifier.padding(paddingValues)
         ) {
 
@@ -271,6 +278,10 @@ fun MainScreen() {
                 ProfileScreen(
                     userId = ownerID
                 )
+            }
+
+            composable(BottomNavItem.Dashboard.route) {
+                DashboardScreen(userId = ownerID)
             }
 
             composable(Screen.GroupScreen.route) { backStackEntry ->

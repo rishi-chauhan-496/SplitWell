@@ -36,6 +36,7 @@ import com.example.splitbuddy.domain.usecase.group.RemoveMembersFromGroupUseCase
 import com.example.splitbuddy.domain.usecase.user.GetAllUserUseCase
 import com.example.splitbuddy.domain.usecase.user.GetOrCreateUserUseCase
 import com.example.splitbuddy.domain.usecase.user.UpdateUserUseCase
+import com.example.splitbuddy.ui.home_screen.dashboard.DashboardViewModel
 import com.example.splitbuddy.ui.home_screen.expense.expense_creating.ExpenseViewModel
 import com.example.splitbuddy.ui.home_screen.expense.expense_screen.ExpenseDetailViewModel
 import com.example.splitbuddy.ui.home_screen.expense.expense_update_screen.ExpenseUpdateViewModel
@@ -267,6 +268,14 @@ object DIContainer {
             ProfileEditViewModel(
                 userQuery         = get(),
                 updateUserUseCase = get()
+            )
+        }
+        viewModel<DashboardViewModel> {
+            DashboardViewModel(
+                userQuery                    = get(),
+                getAllGroupsUseCase           = get(),
+                getGroupMembersUseCase       = get(),
+                getAllExpenseByGroupIdUseCase = get()
             )
         }
 
