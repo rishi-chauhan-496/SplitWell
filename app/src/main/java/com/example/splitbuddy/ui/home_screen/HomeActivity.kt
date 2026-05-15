@@ -43,6 +43,7 @@ import com.example.splitbuddy.ui.theme.SplitBuddyTheme
 import org.koin.androidx.compose.koinViewModel
 import androidx.core.content.edit
 import com.example.splitbuddy.ui.home_screen.dashboard.DashboardScreen
+import com.example.splitbuddy.ui.home_screen.friend.FriendListScreen
 import com.example.splitbuddy.ui.profile.ProfileScreen
 import com.example.splitbuddy.ui.util.SnackbarController
 
@@ -224,6 +225,12 @@ fun MainScreen() {
                 )
             }
 
+            route == BottomNavItem.FriendList.route -> {
+                topBarViewModel.update(
+                    TopBarState(title = "Friends", isVisible = true)
+                )
+            }
+
             else -> {
                 topBarViewModel.update(TopBarState(isVisible = false))
             }
@@ -282,6 +289,10 @@ fun MainScreen() {
 
             composable(BottomNavItem.Dashboard.route) {
                 DashboardScreen(userId = ownerID)
+            }
+
+            composable(BottomNavItem.FriendList.route) {
+                FriendListScreen(ownerID = ownerID)
             }
 
             composable(Screen.GroupScreen.route) { backStackEntry ->

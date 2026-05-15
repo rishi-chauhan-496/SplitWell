@@ -40,6 +40,7 @@ import com.example.splitbuddy.ui.home_screen.dashboard.DashboardViewModel
 import com.example.splitbuddy.ui.home_screen.expense.expense_creating.ExpenseViewModel
 import com.example.splitbuddy.ui.home_screen.expense.expense_screen.ExpenseDetailViewModel
 import com.example.splitbuddy.ui.home_screen.expense.expense_update_screen.ExpenseUpdateViewModel
+import com.example.splitbuddy.ui.home_screen.friend.FriendListViewModel
 import com.example.splitbuddy.ui.home_screen.group.group_add_member_screen.AddMemberViewModel
 import com.example.splitbuddy.ui.home_screen.group.group_screen.GroupDetailViewModel
 import com.example.splitbuddy.ui.home_screen.group.group_updating.GroupUpdatingViewModel
@@ -277,6 +278,9 @@ object DIContainer {
                 getGroupMembersUseCase       = get(),
                 getAllExpenseByGroupIdUseCase = get()
             )
+        }
+        viewModel<FriendListViewModel> {
+            FriendListViewModel(userQuery = get())
         }
 
         viewModel<TopBarViewModel> {
