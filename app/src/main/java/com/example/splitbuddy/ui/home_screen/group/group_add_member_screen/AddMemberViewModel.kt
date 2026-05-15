@@ -4,9 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.splitbuddy.data.remote.group.AddMembersRequest
 import com.example.splitbuddy.data.remote.group.MemberItem
+import com.example.splitbuddy.data.util.Resource
+import com.example.splitbuddy.data.util.toWriteMessage
 import com.example.splitbuddy.domain.usecase.group.AddMultipleMemberToGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
 import com.example.splitbuddy.domain.usecase.user.GetAllUserUseCase
+import com.example.splitbuddy.ui.util.SnackbarController
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,41 +30,46 @@ class AddMemberViewModel(
             _state.update { it.copy(isLoading = true) }
 
             try {
-                // Load all users and current group members at the same time
-                val usersDeferred = async { getAllUserUseCase() }
+                // Run both in parallel
+                val usersDeferred   = async { getAllUserUseCase() }
                 val membersDeferred = async { getGroupMembersUseCase(groupId) }
 
-                val users = usersDeferred.await()
+                val users   = usersDeferred.await()
                 val members = membersDeferred.await()
 
-                // Build a set of userIds already in the group
                 val existingIds = members.map { it.userId }.toSet()
 
                 _state.update {
                     it.copy(
-                        isLoading = false,
-                        users = users,
-                        existingMemberIds = existingIds
+                        isLoading         = false,
+                        users             = users,
+                        existingMemberIds = existingIds,
+                        // If offline and local DB has no users — show message
+                        error             = if (users.isEmpty()) "No users found. Connect to internet to load users." else null
                     )
                 }
 
-            } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = e.message) }
+            } catch (_: Exception) {
+                // getGroupMembersUseCase reads local DB — unlikely to fail
+                // but handle gracefully
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error     = "Failed to load. Please try again."
+                    )
+                }
             }
         }
     }
 
     fun onUserToggle(userId: String) {
         val s = _state.value
-
-        // Don't allow toggling existing members
         if (userId in s.existingMemberIds) return
 
-        val updated = if (userId in s.selectedUserIds) {
-            s.selectedUserIds - userId   // deselect
-        } else {
-            s.selectedUserIds + userId   // select
-        }
+        val updated = if (userId in s.selectedUserIds)
+            s.selectedUserIds - userId
+        else
+            s.selectedUserIds + userId
 
         _state.update { it.copy(selectedUserIds = updated) }
     }
@@ -73,17 +81,19 @@ class AddMemberViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true) }
 
-            try {
-                val request = AddMembersRequest(
-                    members = s.selectedUserIds.map { MemberItem(userId = it) }
-                )
+            val request = AddMembersRequest(
+                members = s.selectedUserIds.map { MemberItem(userId = it) }
+            )
 
-                addMultipleMemberToGroupUseCase(groupId, request)
-
-                _state.update { it.copy(isSaving = false, isSaved = true) }
-
-            } catch (e: Exception) {
-                _state.update { it.copy(isSaving = false, error = e.message) }
+            when (val result = addMultipleMemberToGroupUseCase(groupId, request)) {
+                is Resource.Success -> {
+                    _state.update { it.copy(isSaving = false, isSaved = true) }
+                }
+                is Resource.Error -> {
+                    _state.update { it.copy(isSaving = false) }
+                    SnackbarController.show(result.error.toWriteMessage())
+                }
+                else -> {}
             }
         }
     }
