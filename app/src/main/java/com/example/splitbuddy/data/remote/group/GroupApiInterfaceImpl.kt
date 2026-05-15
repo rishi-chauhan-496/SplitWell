@@ -35,4 +35,8 @@ class GroupApiInterfaceImpl: GroupApiInterface {
         val response = api.updateMember(groupId,userId)
         return response
     }
+    override suspend fun removeMembersFromGroup(groupId: String, request: RemoveMembersRequest): List<Member> {
+        val response = api.removeMembersFromGroup(groupId, request)
+        return response
+    }
 }
