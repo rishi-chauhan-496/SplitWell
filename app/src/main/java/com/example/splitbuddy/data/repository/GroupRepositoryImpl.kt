@@ -8,8 +8,10 @@ import com.example.splitbuddy.data.local.query.UserQuery
 import com.example.splitbuddy.data.remote.group.AddMembersRequest
 import com.example.splitbuddy.data.remote.group.CreateGroupRequest
 import com.example.splitbuddy.data.remote.group.GroupApiInterface
+import com.example.splitbuddy.data.remote.group.RemoveMembersRequest
 import com.example.splitbuddy.data.remote.group.UpdateGroupRequest
 import com.example.splitbuddy.data.remote.user.UserApiInterface
+import com.example.splitbuddy.data.remote.user.UserResponse
 import com.example.splitbuddy.data.util.AppError
 import com.example.splitbuddy.data.util.Resource
 import com.example.splitbuddy.data.util.toAppError
@@ -43,7 +45,23 @@ class GroupRepositoryImpl(
                 tripsQuery.insertTrips(group)
                 group.members?.forEach { member ->
                     try {
-                        syncUserIfNeeded(member.userId)
+                        member.user.let { user ->
+                            userQuery.insertUser(
+                                UserResponse(
+                                    id          = user.id,
+                                    username    = user.username,
+                                    firstName   = user.firstName,
+                                    lastName    = user.lastName,
+                                    contact     = user.contact,
+                                    email       = user.email,
+                                    socialMediaId = user.socialMediaId,
+                                    isActive    = user.isActive,
+                                    isDeleted   = user.isDeleted,
+                                    createdAt   = user.createdAt,
+                                    updatedAt   = user.updatedAt
+                                )
+                            )
+                        }
                         tripManagerQuery.insertTripManager(member)
                     } catch (_: Exception) { }
                 }
@@ -70,7 +88,23 @@ class GroupRepositoryImpl(
 
             data.members?.forEach { member ->
                 try {
-                    syncUserIfNeeded(member.userId)
+                    member.user.let { user ->
+                        userQuery.insertUser(
+                            UserResponse(
+                                id = user.id,
+                                username = user.username,
+                                firstName = user.firstName,
+                                lastName = user.lastName,
+                                contact = user.contact,
+                                email = user.email,
+                                socialMediaId = user.socialMediaId,
+                                isActive = user.isActive,
+                                isDeleted = user.isDeleted,
+                                createdAt = user.createdAt,
+                                updatedAt = user.updatedAt
+                            )
+                        )
+                    }
                     tripManagerQuery.insertTripManager(member)
                 } catch (_: Exception) { }
             }
@@ -117,7 +151,23 @@ class GroupRepositoryImpl(
         return try {
             val data = groupApiInterface.addMultipleMemberToGroup(groupId, body)
             data.forEach { member ->
-                syncUserIfNeeded(member.userId)
+                member.user.let { user ->
+                    userQuery.insertUser(
+                        UserResponse(
+                            id          = user.id,
+                            username    = user.username,
+                            firstName   = user.firstName,
+                            lastName    = user.lastName,
+                            contact     = user.contact,
+                            email       = user.email,
+                            socialMediaId = user.socialMediaId,
+                            isActive    = user.isActive,
+                            isDeleted   = user.isDeleted,
+                            createdAt   = user.createdAt,
+                            updatedAt   = user.updatedAt
+                        )
+                    )
+                }
                 tripManagerQuery.insertTripManager(member)
             }
             Resource.Success(true)
@@ -126,13 +176,14 @@ class GroupRepositoryImpl(
         }
     }
 
-    override suspend fun updateGroupMemberByGroupId(
+    override suspend fun removeMembersFromGroup(
         groupId: String,
-        userId: String
+        request: RemoveMembersRequest
     ): Resource<Boolean> {
         return try {
-            val data = groupApiInterface.updateMembersToGroup(groupId, userId)
-            tripManagerQuery.updateTripManager(data)
+            val data = groupApiInterface.removeMembersFromGroup(groupId, request)
+            data.forEach { tripManagerQuery.updateTripManager(it) }
+            _groupsFlow.value = Resource.Success(tripsQuery.getAllTrips())
             Resource.Success(true)
         } catch (e: Exception) {
             Resource.Error(error = e.toAppError())
@@ -145,14 +196,4 @@ class GroupRepositoryImpl(
     override suspend fun getGroupMemberByGroupId(groupId: String): List<TripManager> =
         tripManagerQuery.getTripManagerByTripId(groupId)
 
-    // ── Private ───────────────────────────────────────────────────────────────
-
-    private suspend fun syncUserIfNeeded(userId: String) {
-        try {
-            if (userQuery.getUser(userId) == null) {
-                val user = userApiInterface.getUserById(userId)
-                userQuery.insertUser(user)
-            }
-        } catch (_: Exception) { }
-    }
 }

@@ -32,6 +32,7 @@ import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.UpdateGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.AddMultipleMemberToGroupUseCase
+import com.example.splitbuddy.domain.usecase.group.RemoveMembersFromGroupUseCase
 import com.example.splitbuddy.domain.usecase.user.GetAllUserUseCase
 import com.example.splitbuddy.domain.usecase.user.GetOrCreateUserUseCase
 import com.example.splitbuddy.domain.usecase.user.UpdateUserUseCase
@@ -191,6 +192,9 @@ object DIContainer {
         single<UpdateUserUseCase> {
             UpdateUserUseCase(repository = get())
         }
+        single<RemoveMembersFromGroupUseCase> {
+            RemoveMembersFromGroupUseCase(repository = get())
+        }
 
         single<android.content.SharedPreferences> {
             androidContext().getSharedPreferences("SplitBuddyPrefs", android.content.Context.MODE_PRIVATE)
@@ -211,9 +215,11 @@ object DIContainer {
         }
         viewModel<GroupUpdatingViewModel> {
             GroupUpdatingViewModel(
-                getGroupUseCase = get(),
-                updateGroupUseCase = get(),
-                deleteGroupUseCase = get()
+                getGroupUseCase              = get(),
+                getGroupMembersUseCase       = get(),
+                updateGroupUseCase           = get(),
+                deleteGroupUseCase           = get(),
+                removeMembersFromGroupUseCase = get()
             )
         }
         viewModel<GroupDetailViewModel> {

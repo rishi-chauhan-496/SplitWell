@@ -20,12 +20,15 @@ class UserRepositoryImpl(
     }
 
     override suspend fun getAllUser(): List<User> {
-        val users = userApiInterface.getAllUser()
-
-        users.forEach { user ->
-            userQuery.insertUser(user)
+        try {
+            // Try API — sync to local DB if online
+            val users = userApiInterface.getAllUser()
+            users.forEach { user -> userQuery.insertUser(user) }
+        } catch (_: Exception) {
+            // Offline — fall through to local data
         }
 
+        // Always return from local DB
         return userQuery.getALLUser()
     }
 
