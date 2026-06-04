@@ -10,9 +10,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.splitbuddy.R
 import com.example.splitbuddy.ui.components.AppTextField
 import com.example.splitbuddy.ui.components.GradientButton
 import com.example.splitbuddy.ui.components.InitialsAvatar
@@ -79,7 +81,7 @@ fun ProfileEditScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         AppTextField(
-            label = "First Name",
+            label = stringResource(R.string.profile_label_first_name),
             value = state.value.firstName,
             onValueChange = viewModel::onFirstNameChange
         )
@@ -87,7 +89,7 @@ fun ProfileEditScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         AppTextField(
-            label = "Last Name",
+            label = stringResource(R.string.profile_label_last_name),
             value = state.value.lastName,
             onValueChange = viewModel::onLastNameChange
         )
@@ -95,7 +97,7 @@ fun ProfileEditScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         AppTextField(
-            label = "Username *",
+            label = stringResource(R.string.profile_label_username_required),
             value = state.value.userName,
             onValueChange = viewModel::onUserNameChange,
             isError = state.value.userNameError != null,
@@ -105,7 +107,7 @@ fun ProfileEditScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         AppTextField(
-            label = "Phone Number *",
+            label = stringResource(R.string.profile_label_phone_required),
             value = state.value.contact,
             onValueChange = viewModel::onContactChange,
             isError = state.value.contactError != null,
@@ -115,14 +117,14 @@ fun ProfileEditScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         AppTextField(
-            label = "Email (from Google)",
+            label = stringResource(R.string.profile_label_email_google),
             value = state.value.email,
             onValueChange = {},
             readOnly = true
         )
 
         Text(
-            text = "Email is linked to your Google account and cannot be changed",
+            text = stringResource(R.string.profile_email_note),
             fontSize = 11.sp,
             color = MaterialTheme.colorScheme.surfaceVariant,
             textAlign = TextAlign.Center,
@@ -143,7 +145,7 @@ fun ProfileEditScreen(
         }
 
         GradientButton(
-            text = "Save Profile",
+            text = stringResource(R.string.profile_save_button),
             onClick = { viewModel.save(userId) },
             isLoading = state.value.isSaving
         )

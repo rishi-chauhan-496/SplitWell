@@ -11,10 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.splitbuddy.R
 import com.example.splitbuddy.ui.components.EmptyStateView
 import com.example.splitbuddy.ui.components.InitialsAvatar
 import com.example.splitbuddy.ui.components.LoadingView
@@ -35,7 +37,7 @@ fun FriendListScreen(ownerID: String) {
         state.isLoading -> LoadingView()
 
         state.friends.isEmpty() -> EmptyStateView(
-            message = "No friends yet\nJoin a group to see members here"
+            message = stringResource(R.string.friends_empty_message)
         )
 
         else -> {

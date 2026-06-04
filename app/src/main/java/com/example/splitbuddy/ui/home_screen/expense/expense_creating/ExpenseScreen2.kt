@@ -53,7 +53,7 @@ fun ExpenseScreen2(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = "Splitting among ${state.includedCount} of ${state.members.size} people",
+            text = stringResource(R.string.expense_splitting_among, state.includedCount, state.members.size),
             color = Color.Gray,
             fontSize = 13.sp
         )

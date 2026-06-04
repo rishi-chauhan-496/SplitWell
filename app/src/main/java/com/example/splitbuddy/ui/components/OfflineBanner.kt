@@ -9,8 +9,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.splitbuddy.R
 
 @Composable
 fun OfflineBanner(isOffline: Boolean) {
@@ -22,7 +24,7 @@ fun OfflineBanner(isOffline: Boolean) {
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text(
-                text = "⚠ You're offline — showing cached data",
+                text = stringResource(R.string.offline_banner_message),
                 fontSize = 12.sp,
                 color = Color(0xFF856404)
             )

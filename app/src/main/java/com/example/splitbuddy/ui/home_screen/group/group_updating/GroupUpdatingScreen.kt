@@ -38,6 +38,8 @@ fun GroupUpdatingScreen(
     val viewModel: GroupUpdatingViewModel = koinViewModel()
     val state = viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val msgUpdated = stringResource(R.string.group_toast_updated)
+    val msgDeleted = stringResource(R.string.group_toast_deleted)
 
     LaunchedEffect(groupId) {
         viewModel.load(groupId)
@@ -45,14 +47,14 @@ fun GroupUpdatingScreen(
 
     LaunchedEffect(state.value.isUpdated) {
         if (state.value.isUpdated) {
-            Toast.makeText(context, "Group Updated", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, msgUpdated, Toast.LENGTH_SHORT).show()
             onBack()
         }
     }
 
     LaunchedEffect(state.value.isDeleted) {
         if (state.value.isDeleted) {
-            Toast.makeText(context, "Group Deleted", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, msgDeleted, Toast.LENGTH_SHORT).show()
             onBack()
         }
     }
@@ -94,7 +96,7 @@ fun GroupUpdatingScreen(
             // Remove selected button — only shows when members are selected
             if (state.value.selectedToRemove.isNotEmpty()) {
                 Text(
-                    text = "Remove (${state.value.selectedToRemove.size})",
+                    text = stringResource(R.string.group_remove_selected, state.value.selectedToRemove.size),
                     color = Color.Red,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold
@@ -106,7 +108,7 @@ fun GroupUpdatingScreen(
 
         if (state.value.members.isEmpty()) {
             Text(
-                text = "No members",
+                text = stringResource(R.string.group_no_members),
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 fontSize = 14.sp
             )
@@ -133,8 +135,8 @@ fun GroupUpdatingScreen(
 
         DeleteButtonWithConfirm(
             buttonText = stringResource(R.string.delete),
-            dialogTitle = "Delete Group",
-            dialogMessage = "Are you sure you want to delete this group?",
+            dialogTitle = stringResource(R.string.group_delete_title),
+            dialogMessage = stringResource(R.string.group_delete_message),
             onConfirm = { viewModel.delete(groupId) }
         )
     }

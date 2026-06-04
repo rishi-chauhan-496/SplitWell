@@ -10,9 +10,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.splitbuddy.R
 import com.example.splitbuddy.ui.components.*
 import com.example.splitbuddy.ui.home_screen.expense.ExpensePersonCard
 import com.example.splitbuddy.ui.home_screen.expense.expense_creating.SplitMethod
@@ -27,7 +29,7 @@ fun ExpenseUpdateScreen(
     val viewModel: ExpenseUpdateViewModel = koinViewModel()
     val state = viewModel.state.collectAsState()
     val context = LocalContext.current
-    val updatedMsg = "Expense Updated"
+    val updatedMsg = stringResource(R.string.expense_update_success)
 
     LaunchedEffect(expenseId) { viewModel.load(expenseId, groupId) }
 
@@ -52,7 +54,7 @@ fun ExpenseUpdateScreen(
         ) {
             item {
                 AppTextField(
-                    label = "Title",
+                    label = stringResource(R.string.expense_update_field_title),
                     value = state.value.title,
                     onValueChange = viewModel::onTitleChange,
                     isError = state.value.titleError != null,
@@ -62,7 +64,7 @@ fun ExpenseUpdateScreen(
 
             item {
                 AppTextField(
-                    label = "Amount",
+                    label = stringResource(R.string.expense_update_field_amount),
                     value = state.value.amount,
                     onValueChange = viewModel::onAmountChange,
                     isError = state.value.amountError != null,
@@ -72,7 +74,7 @@ fun ExpenseUpdateScreen(
 
             item {
                 AppTextField(
-                    label = "Description",
+                    label = stringResource(R.string.expense_update_field_description),
                     value = state.value.description,
                     onValueChange = viewModel::onDescriptionChange,
                     singleLine = false,
@@ -81,7 +83,7 @@ fun ExpenseUpdateScreen(
             }
 
             item {
-                Text("Paid by", color = MaterialTheme.colorScheme.secondary, fontSize = 12.sp)
+                Text(stringResource(R.string.expense_update_field_paid_by), color = MaterialTheme.colorScheme.secondary, fontSize = 12.sp)
                 PaidByDropdown(
                     members = state.value.members,
                     selectedUserId = state.value.paidByUserId,
@@ -93,7 +95,7 @@ fun ExpenseUpdateScreen(
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Splitting among ${state.value.includedCount} of ${state.value.members.size} people",
+                    text = stringResource(R.string.expense_splitting_among, state.value.includedCount, state.value.members.size),
                     color = Color.Gray,
                     fontSize = 12.sp
                 )
@@ -143,7 +145,7 @@ fun ExpenseUpdateScreen(
 
             if (state.value.members.isEmpty()) {
                 item {
-                    EmptyStateView(message = "No members found")
+                    EmptyStateView(message = stringResource(R.string.expense_no_members_found))
                 }
             } else {
                 itemsIndexed(state.value.members) { index, member ->
@@ -210,7 +212,7 @@ fun ExpenseUpdateScreen(
             }
 
             GradientButton(
-                text = "Save",
+                text = stringResource(R.string.save_),
                 onClick = { viewModel.update(expenseId, groupId) },
                 isLoading = state.value.isSaving
             )

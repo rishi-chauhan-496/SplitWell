@@ -12,9 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.splitbuddy.R
 import com.example.splitbuddy.ui.components.LoadingView
 import com.example.splitbuddy.ui.home_screen.expense.ExpenseListCard
 import com.example.splitbuddy.ui.home_screen.group.GroupListCard
@@ -59,11 +61,11 @@ fun DashboardScreen(userId: String) {
 
         // ── Section 3: Recent Groups ──────────────────────────────────────────
         item {
-            SectionHeader(title = "Recent Groups")
+            SectionHeader(title = stringResource(R.string.dashboard_recent_groups))
         }
 
         if (state.recentGroups.isEmpty()) {
-            item { EmptyHint(text = "No groups yet — tap Groups to create one") }
+            item { EmptyHint(text = stringResource(R.string.dashboard_empty_groups)) }
         } else {
             items(state.recentGroups) { group ->
                 // Wrapped in a Box so horizontal padding matches the rest of the screen
@@ -82,11 +84,11 @@ fun DashboardScreen(userId: String) {
 
         // ── Section 4: Recent Expenses ────────────────────────────────────────
         item {
-            SectionHeader(title = "Recent Expenses")
+            SectionHeader(title = stringResource(R.string.dashboard_recent_expenses))
         }
 
         if (state.recentExpenses.isEmpty()) {
-            item { EmptyHint(text = "No expenses yet — add one inside a group") }
+            item { EmptyHint(text = stringResource(R.string.dashboard_empty_expenses)) }
         } else {
             items(state.recentExpenses) { expense ->
                 ExpenseListCard(
@@ -114,14 +116,14 @@ private fun GreetingHeader(userName: String) {
     ) {
         Column {
             Text(
-                text       = "Hello, $userName 👋",
+                text = stringResource(R.string.dashboard_greeting, userName),
                 style      = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color      = Color.White
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text  = "Here's your spending overview",
+                text = stringResource(R.string.dashboard_greeting_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.85f)
             )
@@ -142,21 +144,21 @@ private fun SummaryCardsRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         SummaryCard(
-            label       = "Total Spent",
+            label = stringResource(R.string.dashboard_total_spent),
             amount      = totalSpent,
             amountColor = Primary,
             modifier    = Modifier.weight(1f)
         )
         SummaryCard(
-            label       = "Owed to You",
+            label = stringResource(R.string.dashboard_owed_to_you),
             amount      = youAreOwed,
-            amountColor = Color(0xFF2E7D32),  // green
+            amountColor = Color(0xFF2E7D32),
             modifier    = Modifier.weight(1f)
         )
         SummaryCard(
-            label       = "You Owe",
+            label = stringResource(R.string.dashboard_you_owe),
             amount      = youOwe,
-            amountColor = Color(0xFFC62828),  // red
+            amountColor = Color(0xFFC62828),
             modifier    = Modifier.weight(1f)
         )
     }
@@ -186,7 +188,7 @@ private fun SummaryCard(
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text       = "₹${"%.0f".format(amount)}",
+                text = stringResource(R.string.dashboard_amount_format, "%.0f".format(amount)),
                 style      = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color      = amountColor

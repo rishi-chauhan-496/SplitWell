@@ -1,16 +1,13 @@
 <resources>
+
     <string name="app_name">SplitBuddy</string>
     <string name="onboard_title_1">Save your time and money</string>
     <string name="onboard_desc_1">Enjoy together, happy to share and save your time with transactions at home.</string>
-
     <string name="onboard_title_2">Easy way to split payment</string>
     <string name="onboard_desc_2">Split payment with your beloved, friend or anymore.</string>
-
     <string name="onboard_title_3">Settle up anytime</string>
     <string name="onboard_desc_3">Pay friends quickly and keep balances clear.</string>
-
     <string name="title_activity_home_screen">HomeActivity</string>
-
     <string name="Expense_Screen_1_Title">What are you</string>
     <string name="Expense_Screen_1_Title_2">splitting?</string>
     <string name="Expense_Screen_1_Text">Add a name of the Split so that it\'s easy to remember later</string>
@@ -19,14 +16,12 @@
     <string name="Expense_Screen_1_TextFiled_3">Expense paidBy</string>
     <string name="Expense_Screen_1_TextFiled_4">Expense Description</string>
     <string name="continue_">Continue</string>
-
     <string name="title">Title</string>
     <string name="by">by</string>
     <string name="amount">Amount</string>
     <string name="type">Type</string>
     <string name="member">Member</string>
     <string name="total_expense">TotalExpense</string>
-
     <string name="Expense_Screen_2_Title">How do you want to</string>
     <string name="Expense_Screen_2_Title_2">split </string>
     <string name="Expense_Screen_2_Text_Equal">Split equally between all the members</string>
@@ -38,20 +33,17 @@
     <string name="next_">Next</string>
     <string name="save_">Save</string>
     <string name="delete">Delete</string>
-
     <string name ="Group_Creation_Screen_Title">Create the group.</string>
     <string name ="Group_Creation_Button">+ Create group</string>
     <string name ="Group_Creation_Filed">Add member to group</string>
     <string name ="Group_Updating_Screen_Title">Update the group</string>
     <string name ="Group_Updating_Filed">Update member to group</string>
-
     <string name="add_member_hint">Tap a user to select them</string>
     <string name="add_member_selected_single">1 user selected</string>
     <string name="add_member_selected_plural">%d users selected</string>
     <string name="add_member_already_in_group">Already in group</string>
     <string name="add_member_button">Add Members</string>
     <string name="add_member_error">Error: %s</string>
-
     <string name="expense_detail_not_found">Expense not found</string>
     <string name="expense_detail_split_breakdown">Split breakdown</string>
     <string name="expense_detail_paid_by">Paid by</string>
@@ -62,7 +54,6 @@
     <string name="expense_detail_delete_confirm">Yes, Delete</string>
     <string name="expense_detail_delete_success">Expense Deleted</string>
     <string name="cancel">Cancel</string>
-
     <string name="expense_update_title">Edit Expense</string>
     <string name="expense_update_field_title">Title</string>
     <string name="expense_update_field_amount">Amount</string>
@@ -72,15 +63,75 @@
     <string name="expense_update_success">Expense Updated</string>
     <string name="expense_update_delete_title">Delete Expense</string>
     <string name="expense_update_delete_message">Are you sure you want to delete this expense?</string>
-
     <string name="topbar_expense_detail">Expense Detail</string>
     <string name="topbar_expense_update">Edit Expense</string>
-
     <string name="error_title_required">Title required</string>
     <string name="error_amount_required">Amount required</string>
     <string name="error_amount_invalid">Enter a valid number</string>
     <string name="error_amount_zero">Must be greater than 0</string>
-    
+    <string name="dashboard_greeting">Hello, %s 👋</string>
+    <string name="dashboard_greeting_subtitle">Here\'s your spending overview</string>
+    <string name="dashboard_total_spent">Total Spent</string>
+    <string name="dashboard_owed_to_you">Owed to You</string>
+    <string name="dashboard_you_owe">You Owe</string>
+    <string name="dashboard_amount_format">₹%s</string>
+    <string name="dashboard_recent_groups">Recent Groups</string>
+    <string name="dashboard_recent_expenses">Recent Expenses</string>
+    <string name="dashboard_empty_groups">No groups yet — tap Groups to create one</string>
+    <string name="dashboard_empty_expenses">No expenses yet — add one inside a group</string>
+    <string name="friends_empty_message">No friends yet\nJoin a group to see members here</string>
+    <string name="topbar_dashboard">Home</string>
+    <string name="topbar_friends">Friends</string>
+    <string name="amount_rupee_format">₹%s</string>
+    <string name="not_set">Not set</string>
+    <string name="cd_edit">Edit</string>
+    <string name="error_something_went_wrong">Something went wrong.\n%s</string>
+    <string name="offline_banner_message">⚠ You\'re offline — showing cached data</string>
+    <string name="login_tagline">Split expenses with friends,\nsimply and fairly.</string>
+    <string name="login_google_button">Continue with Google</string>
+    <string name="login_terms">By continuing you agree to our Terms of Service\nand Privacy Policy</string>
+    <string name="topbar_groups">Groups</string>
+    <string name="topbar_group_details">Group Details</string>
+    <string name="topbar_update_group">Update Group</string>
+    <string name="topbar_create_group">Create Group</string>
+    <string name="topbar_add_members">Add Members</string>
+    <string name="topbar_add_expense">Add Expense</string>
+    <string name="topbar_split">Split</string>
+    <string name="topbar_preview">Preview</string>
+    <string name="topbar_my_profile">My Profile</string>
+    <string name="topbar_edit_profile">Edit Profile</string>
+    <string name="groups_empty_message">No groups yet\nTap + to create your first group</string>
+    <string name="group_fallback_name">Group</string>
+    <string name="group_member_count">%d members</string>
+    <string name="group_expense_count">%d expenses</string>
+    <string name="group_total_amount">Total: ₹%s</string>
+    <string name="group_action_add_member">Add Member</string>
+    <string name="group_action_settlement">Settlement</string>
+    <string name="group_action_add_expense">Add Expense</string>
+    <string name="group_empty_expenses">No expenses yet</string>
+    <string name="group_toast_updated">Group Updated</string>
+    <string name="group_toast_deleted">Group Deleted</string>
+    <string name="group_remove_selected">Remove (%d)</string>
+    <string name="group_no_members">No members</string>
+    <string name="group_delete_title">Delete Group</string>
+    <string name="group_delete_message">Are you sure you want to delete this group?</string>
+    <string name="add_member_no_users">No users found</string>
+    <string name="expense_splitting_among">Splitting among %1$d of %2$d people</string>
+    <string name="expense_paid_by_name">Paid by: %s</string>
+    <string name="expense_split_among">Split among %d people</string>
+    <string name="expense_no_split_data">No split data found</string>
+    <string name="expense_no_members_found">No members found</string>
+    <string name="profile_label_email">Email</string>
+    <string name="profile_label_phone">Phone Number</string>
+    <string name="profile_label_username">Username</string>
+    <string name="profile_label_first_name">First Name</string>
+    <string name="profile_label_last_name">Last Name</string>
+    <string name="profile_label_username_required">Username *</string>
+    <string name="profile_label_phone_required">Phone Number *</string>
+    <string name="profile_label_email_google">Email (from Google)</string>
+    <string name="profile_email_note">Email is linked to your Google account and cannot be changed</string>
+    <string name="profile_save_button">Save Profile</string>
+
     <string name="default_web_client_id">203002226684-mhat13a36eomecekr6k84rcjjrfqmphf.apps.googleusercontent.com</string>
 
 </resources>

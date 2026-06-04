@@ -69,7 +69,7 @@ fun AddMemberScreen(
 
             state.value.users.isEmpty() -> {
                 EmptyStateView(
-                    message = "No users found",
+                    message = stringResource(R.string.add_member_no_users),
                     modifier = Modifier.weight(1f)
                 )
             }

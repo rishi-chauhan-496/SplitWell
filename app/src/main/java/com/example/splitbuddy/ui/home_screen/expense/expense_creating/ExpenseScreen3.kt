@@ -51,18 +51,18 @@ fun ExpenseScreen3(
                     style = MaterialTheme.typography.titleLarge
                 )
                 Text(
-                    text = "₹${state.amount}",
+                    text = stringResource(R.string.amount_rupee_format, state.amount),
                     color = Color.White,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Paid by: ${state.paidByUserName}",
+                    text = stringResource(R.string.expense_paid_by_name, state.paidByUserName),
                     color = Color.White.copy(alpha = 0.85f),
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    text = "Split among ${includedMembers.size} people",
+                    text = stringResource(R.string.expense_split_among, includedMembers.size),
                     color = Color.White.copy(alpha = 0.75f),
                     style = MaterialTheme.typography.bodySmall
                 )

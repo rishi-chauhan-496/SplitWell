@@ -114,7 +114,7 @@ class ExpenseUpdateViewModel(
 
     fun onSplitMethodChange(method: SplitMethod) {
         val s = _state.value
-        val total = s.amount.toDoubleOrNull() ?: 0.0
+        s.amount.toDoubleOrNull() ?: 0.0
 
         when (method) {
             SplitMethod.EQUAL -> {
