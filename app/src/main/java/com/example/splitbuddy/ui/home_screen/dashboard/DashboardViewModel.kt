@@ -7,6 +7,7 @@ import com.example.splitbuddy.data.util.Resource
 import com.example.splitbuddy.domain.usecase.expense.GetAllExpenseByGroupIdUseCase
 import com.example.splitbuddy.domain.usecase.group.GetAllGroupsUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
+import com.example.splitbuddy.domain.usecase.settlement.GetGroupBalancesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -17,7 +18,8 @@ class DashboardViewModel(
     private val userQuery: UserQuery,
     private val getAllGroupsUseCase: GetAllGroupsUseCase,
     private val getGroupMembersUseCase: GetGroupMembersUseCase,
-    private val getAllExpenseByGroupIdUseCase: GetAllExpenseByGroupIdUseCase
+    private val getAllExpenseByGroupIdUseCase: GetAllExpenseByGroupIdUseCase,
+    private val getGroupBalancesUseCase: GetGroupBalancesUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -47,8 +49,11 @@ class DashboardViewModel(
             // This builds a pair: (DashboardGroup info, list of expenses)
             val groupData = allGroups.map { trip ->
                 val members  = getGroupMembersUseCase(trip.id)
-                val expRes   = getAllExpenseByGroupIdUseCase.load(trip.id)
-                val expenses = (expRes as? Resource.Success)?.data ?: emptyList()
+                val expenses = when (val expRes   = getAllExpenseByGroupIdUseCase.load(trip.id)) {
+                    is Resource.Success -> expRes.data
+                    is Resource.Error   -> expRes.data ?: emptyList()
+                    else                -> emptyList()
+                }
 
                 val group = DashboardGroup(
                     id           = trip.id,
@@ -85,13 +90,27 @@ class DashboardViewModel(
             // youAreOwed and youOwe are 0.0 for now — we'll add real data later
             val totalSpent = groupData.flatMap { it.second }.sumOf { it.amount }
 
+            // Calculate youOwe + youAreOwed across all groups
+            var youOwe     = 0.0
+            var youAreOwed = 0.0
+
+            for (group in allGroups) {
+                val suggestions = getGroupBalancesUseCase(group.id)
+                for (suggestion in suggestions) {
+                    when (userId) {
+                        suggestion.fromUserId -> youOwe     += suggestion.amount
+                        suggestion.toUserId   -> youAreOwed += suggestion.amount
+                    }
+                }
+            }
+
             _uiState.update {
                 it.copy(
                     isLoading      = false,
                     userName       = displayName,
                     totalSpent     = totalSpent,
-                    youAreOwed     = 0.0,
-                    youOwe         = 0.0,
+                    youAreOwed     = youAreOwed,
+                    youOwe         = youOwe,
                     recentGroups   = recentGroups,
                     recentExpenses = recentExpenses
                 )

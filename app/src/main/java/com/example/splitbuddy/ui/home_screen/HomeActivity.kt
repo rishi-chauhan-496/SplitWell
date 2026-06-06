@@ -36,6 +36,7 @@ import com.example.splitbuddy.ui.home_screen.group.group_creation.GroupCreationS
 import com.example.splitbuddy.ui.home_screen.group.group_screen.GroupScreen
 import com.example.splitbuddy.ui.home_screen.group.group_updating.GroupUpdatingScreen
 import com.example.splitbuddy.ui.home_screen.group.groups_screen.GroupsScreen
+import com.example.splitbuddy.ui.home_screen.settlement.SettlementScreen
 import com.example.splitbuddy.ui.home_screen.top_bar.AppTopBar
 import com.example.splitbuddy.ui.home_screen.top_bar.TopBarState
 import com.example.splitbuddy.ui.home_screen.top_bar.TopBarViewModel
@@ -98,6 +99,7 @@ fun MainScreen() {
     val strEditProfile   = stringResource(R.string.topbar_edit_profile)
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val strSettlement = stringResource(R.string.topbar_settlement)
 
     LaunchedEffect(route) {
         when {
@@ -247,6 +249,12 @@ fun MainScreen() {
                 )
             }
 
+            route?.startsWith("settlement/") == true -> {
+                topBarViewModel.update(
+                    TopBarState(title = strSettlement, isVisible = true, showBack = true)
+                )
+            }
+
             else -> {
                 topBarViewModel.update(TopBarState(isVisible = false))
             }
@@ -321,7 +329,9 @@ fun MainScreen() {
                     onAddMember = {
                         navController.navigate(Screen.AddMemberScreen.createRoute(groupId))
                     },
-                    onSettlement = { /* TODO */ },
+                    onSettlement = {
+                        navController.navigate(Screen.SettlementScreen.createRoute(groupId))
+                    },
                     onExpenseClick = { expenseId ->
                         navController.navigate(
                             Screen.ExpenseDetailScreen.createRoute(expenseId, groupId)
@@ -398,6 +408,11 @@ fun MainScreen() {
                         }
                     }
                 )
+            }
+
+            composable(Screen.SettlementScreen.route) { backStackEntry ->
+                val groupId = backStackEntry.arguments?.getString("groupId") ?: ""
+                SettlementScreen(groupId = groupId)
             }
         }
 
