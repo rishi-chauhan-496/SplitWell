@@ -7,11 +7,14 @@ import com.example.splitbuddy.ui.MainApplication
 import com.example.splitbuddy.data.local.database.Database
 import com.example.splitbuddy.data.local.query.ExpenseQuery
 import com.example.splitbuddy.data.local.query.ExpenseShareQuery
+import com.example.splitbuddy.data.local.query.SettlementQuery
 import com.example.splitbuddy.data.local.query.TripManagerQuery
 import com.example.splitbuddy.data.local.query.TripsQuery
 import com.example.splitbuddy.data.local.query.UserQuery
 import com.example.splitbuddy.data.remote.expense.ExpenseApiInterface
 import com.example.splitbuddy.data.remote.expense.ExpenseApiInterfaceImpl
+import com.example.splitbuddy.data.remote.settlement.SettlementApiInterface
+import com.example.splitbuddy.data.remote.settlement.SettlementApiInterfaceImpl
 import com.example.splitbuddy.data.remote.user.UserApiInterface
 import com.example.splitbuddy.data.remote.user.UserApiInterfaceImpl
 import com.example.splitbuddy.data.repository.ExpenseRepositoryImpl
@@ -19,6 +22,7 @@ import com.example.splitbuddy.data.repository.GroupRepositoryImpl
 import com.example.splitbuddy.data.repository.UserRepositoryImpl
 import com.example.splitbuddy.data.sync.AppLifecycleObserver
 import com.example.splitbuddy.data.sync.SyncManager
+import com.example.splitbuddy.domain.calculator.SettlementCalculator
 import com.example.splitbuddy.domain.repository.ExpenseRepository
 import com.example.splitbuddy.domain.repository.GroupRepository
 import com.example.splitbuddy.domain.repository.UserRepository
@@ -33,6 +37,8 @@ import com.example.splitbuddy.domain.usecase.group.GetGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.UpdateGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.AddMultipleMemberToGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.RemoveMembersFromGroupUseCase
+import com.example.splitbuddy.domain.usecase.settlement.CreateSettlementUseCase
+import com.example.splitbuddy.domain.usecase.settlement.GetGroupBalancesUseCase
 import com.example.splitbuddy.domain.usecase.user.GetAllUserUseCase
 import com.example.splitbuddy.domain.usecase.user.GetOrCreateUserUseCase
 import com.example.splitbuddy.domain.usecase.user.UpdateUserUseCase
@@ -46,6 +52,7 @@ import com.example.splitbuddy.ui.home_screen.group.group_screen.GroupDetailViewM
 import com.example.splitbuddy.ui.home_screen.group.group_updating.GroupUpdatingViewModel
 import com.example.splitbuddy.ui.home_screen.group.group_creation.GroupCreationViewModel
 import com.example.splitbuddy.ui.home_screen.group.groups_screen.GroupsDataViewModel
+import com.example.splitbuddy.ui.home_screen.settlement.SettlementViewModel
 import com.example.splitbuddy.ui.home_screen.top_bar.TopBarViewModel
 import com.example.splitbuddy.ui.login_screen.LoginViewModel
 import com.example.splitbuddy.ui.profile.ProfileEditViewModel
@@ -95,16 +102,21 @@ object DIContainer {
                 dbHelper = get()
             )
         }
+        single<SettlementQuery> {
+            SettlementQuery(dbHelper = get())
+        }
 
         single<UserApiInterface> {
             UserApiInterfaceImpl()
         }
-
         single<GroupApiInterface> {
             GroupApiInterfaceImpl()
         }
         single<ExpenseApiInterface> {
             ExpenseApiInterfaceImpl()
+        }
+        single<SettlementApiInterface> {
+            SettlementApiInterfaceImpl()
         }
 
         single<UserRepository> {
@@ -197,10 +209,24 @@ object DIContainer {
         single<RemoveMembersFromGroupUseCase> {
             RemoveMembersFromGroupUseCase(repository = get())
         }
+        single<CreateSettlementUseCase> {
+            CreateSettlementUseCase(
+                settlementApiInterface = get(),
+                settlementQuery        = get()
+            )
+        }
+        single<GetGroupBalancesUseCase> {
+            GetGroupBalancesUseCase(
+                expenseQuery      = get(),
+                expenseShareQuery = get(),
+                calculator        = get()
+            )
+        }
 
         single<android.content.SharedPreferences> {
             androidContext().getSharedPreferences("SplitBuddyPrefs", android.content.Context.MODE_PRIVATE)
         }
+        single { SettlementCalculator() }
 
         viewModel<GroupCreationViewModel> {
             GroupCreationViewModel(
@@ -276,11 +302,21 @@ object DIContainer {
                 userQuery                    = get(),
                 getAllGroupsUseCase           = get(),
                 getGroupMembersUseCase       = get(),
-                getAllExpenseByGroupIdUseCase = get()
+                getAllExpenseByGroupIdUseCase = get(),
+                getGroupBalancesUseCase      = get()
             )
         }
         viewModel<FriendListViewModel> {
             FriendListViewModel(userQuery = get())
+        }
+        viewModel<SettlementViewModel> {
+            SettlementViewModel(
+                getGroupBalancesUseCase = get(),
+                createSettlementUseCase = get(),
+                getGroupMembersUseCase  = get(),
+                settlementQuery         = get(),
+                userQuery               = get()
+            )
         }
 
         viewModel<TopBarViewModel> {
