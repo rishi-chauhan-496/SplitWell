@@ -2,12 +2,15 @@ package com.example.splitbuddy.ui.home_screen.group.group_screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.splitbuddy.data.util.AppError
+import com.example.splitbuddy.data.util.Resource
 import com.example.splitbuddy.domain.usecase.expense.GetAllExpenseByGroupIdUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupUseCase
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class GroupDetailViewModel(
@@ -21,28 +24,36 @@ class GroupDetailViewModel(
 
     fun load(groupId: String) {
         viewModelScope.launch {
-            _uiState.value = GroupDetailUiState(isLoading = true)
+            _uiState.update { it.copy(isLoading = true) }
 
-            try {
-                // Run all 3 calls at the same time using async
-                val expensesDeferred = async { getAllExpenseByGroupIdUseCase(groupId) }
-                val groupDeferred = async { getGroupUseCase(groupId) }
-                val membersDeferred = async { getGroupMembersUseCase(groupId) }
+            // Collect expense flow
+            getAllExpenseByGroupIdUseCase.observe().collect { resource ->
+                val expenses = when (resource) {
+                    is Resource.Success -> resource.data
+                    is Resource.Error   -> resource.data ?: emptyList()
+                    is Resource.Loading -> emptyList()
+                }
 
-                val expenses = expensesDeferred.await()
-                val group = groupDeferred.await()
-                val members = membersDeferred.await()
+                val group   = getGroupUseCase(groupId)
+                val members = getGroupMembersUseCase(groupId)
 
-                _uiState.value = GroupDetailUiState(
-                    groupName = group?.tripTitle ?: "",
-                    memberCount = members.size,
-                    expenses = expenses,
-                    totalAmount = expenses.sumOf { it.amount }
-                )
-
-            } catch (e: Exception) {
-                _uiState.value = GroupDetailUiState(error = e.message)
+                _uiState.update {
+                    it.copy(
+                        isLoading   = false,
+                        groupName   = group?.tripTitle ?: "",
+                        memberCount = members.size,
+                        expenses    = expenses,
+                        totalAmount = expenses.sumOf { it.amount },
+                        isOffline   = resource is Resource.Error &&
+                                (resource as Resource.Error).error is AppError.NetworkError
+                    )
+                }
             }
+        }
+
+        // Load expenses
+        viewModelScope.launch {
+            getAllExpenseByGroupIdUseCase.load(groupId)
         }
     }
 }

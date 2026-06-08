@@ -2,18 +2,21 @@ package com.example.splitbuddy.ui.home_screen.group.groups_screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.splitbuddy.data.local.model.Trip
+import com.example.splitbuddy.data.util.AppError
+import com.example.splitbuddy.data.util.Resource
+import com.example.splitbuddy.data.util.toMessage
 import com.example.splitbuddy.domain.usecase.expense.GetAllExpenseByGroupIdUseCase
 import com.example.splitbuddy.domain.usecase.group.GetAllGroupsUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
-import com.example.splitbuddy.domain.usecase.user.GetAllUserUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
 class GroupsDataViewModel(
-    private val getGroupsUseCase: GetAllGroupsUseCase,
-    private val getAllUserUseCase: GetAllUserUseCase,
+    private val getAllGroupsUseCase: GetAllGroupsUseCase,
     private val getGroupMembersUseCase: GetGroupMembersUseCase,
     private val getAllExpenseByGroupIdUseCase: GetAllExpenseByGroupIdUseCase
 ) : ViewModel() {
@@ -21,54 +24,60 @@ class GroupsDataViewModel(
     private val _uiState = MutableStateFlow(GroupsUiState())
     val uiState: StateFlow<GroupsUiState> = _uiState
 
-    fun loadGroups(userId: String) {
+    fun init(userId: String) {
+        // Show local data immediately
         viewModelScope.launch {
-            _uiState.value = GroupsUiState(isLoading = true)
-
-            try {
-
-                getAllUserUseCase()
-
-                val trips = getGroupsUseCase(userId)
-
-                val groupList = trips.mapNotNull { trip ->
-                    trip?.let {
-
-                        val members = getGroupMembersUseCase(it.id)
-
-                        val expenses = try {
-                            getAllExpenseByGroupIdUseCase(it.id)
-                        } catch (_: Exception) {
-                            emptyList()
+            getAllGroupsUseCase.observe().collect { resource ->
+                when (resource) {
+                    is Resource.Success -> {
+                        val summaries = buildSummaries(resource.data)
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                groups    = summaries,
+                                isOffline = false,
+                                error     = null
+                            )
                         }
-
-                        val totalAmount = expenses.sumOf { exp ->
-                            exp.amount
+                    }
+                    is Resource.Error -> {
+                        val summaries = buildSummaries(resource.data ?: emptyList())
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                groups    = summaries,
+                                isOffline = resource.error is AppError.NetworkError,
+                                error     = if (resource.error is AppError.NetworkError) null
+                                else resource.error.toMessage()
+                            )
                         }
-
-                        val totalExpense = expenses.size
-
-                        GroupSummary(
-                            id = it.id,
-                            groupName = it.tripTitle,
-                            totalMember = members.size,
-                            totalExpense = totalExpense,
-                            totalAmount = totalAmount,
-                            createdAt    = it.createdAt
-                        )
+                    }
+                    is Resource.Loading -> {
+                        _uiState.update { it.copy(isLoading = true) }
                     }
                 }
-
-                _uiState.value = GroupsUiState(
-                    groups = groupList
-                )
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _uiState.value = GroupsUiState(
-                    error = e.message
-                )
             }
+        }
+
+        // Trigger initial sync
+        viewModelScope.launch {
+            getAllGroupsUseCase.sync(userId)
+        }
+    }
+
+    private suspend fun buildSummaries(trips: List<Trip>): List<GroupSummary> {
+        return trips.map { trip ->
+            val members  = getGroupMembersUseCase(trip.id)
+            val expenses = getAllExpenseByGroupIdUseCase.load(trip.id)
+            val expenseList = (expenses as? Resource.Success)?.data ?: emptyList()
+            GroupSummary(
+                id           = trip.id,
+                groupName    = trip.tripTitle,
+                totalMember  = members.size,
+                totalExpense = expenseList.size,
+                totalAmount  = expenseList.sumOf { it.amount },
+                createdAt    = trip.createdAt
+            )
         }
     }
 }

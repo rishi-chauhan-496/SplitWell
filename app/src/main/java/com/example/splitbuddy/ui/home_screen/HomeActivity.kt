@@ -10,6 +10,9 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,6 +43,7 @@ import com.example.splitbuddy.ui.theme.SplitBuddyTheme
 import org.koin.androidx.compose.koinViewModel
 import androidx.core.content.edit
 import com.example.splitbuddy.ui.profile.ProfileScreen
+import com.example.splitbuddy.ui.util.SnackbarController
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,6 +79,7 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val route = navBackStackEntry?.destination?.route
 
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(route) {
         when {
@@ -218,7 +223,18 @@ fun MainScreen() {
         }
     }
 
+    LaunchedEffect(Unit) {
+        SnackbarController.events.collect { event ->
+            snackbarHostState.showSnackbar(
+                message     = event.message,
+                actionLabel = event.actionLabel,
+                duration    = SnackbarDuration.Short
+            )
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             if (topBarState.isVisible) {
                 AppTopBar(

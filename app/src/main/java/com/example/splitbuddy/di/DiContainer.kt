@@ -17,6 +17,8 @@ import com.example.splitbuddy.data.remote.user.UserApiInterfaceImpl
 import com.example.splitbuddy.data.repository.ExpenseRepositoryImpl
 import com.example.splitbuddy.data.repository.GroupRepositoryImpl
 import com.example.splitbuddy.data.repository.UserRepositoryImpl
+import com.example.splitbuddy.data.sync.AppLifecycleObserver
+import com.example.splitbuddy.data.sync.SyncManager
 import com.example.splitbuddy.domain.repository.ExpenseRepository
 import com.example.splitbuddy.domain.repository.GroupRepository
 import com.example.splitbuddy.domain.repository.UserRepository
@@ -202,8 +204,7 @@ object DIContainer {
         }
         viewModel<GroupsDataViewModel> {
             GroupsDataViewModel(
-                getGroupsUseCase = get(),
-                getAllUserUseCase = get(),
+                getAllGroupsUseCase = get(),
                 getGroupMembersUseCase = get(),
                 getAllExpenseByGroupIdUseCase = get()
             )
@@ -267,5 +268,16 @@ object DIContainer {
             TopBarViewModel()
         }
 
+        single<SyncManager> {
+            SyncManager(
+                groupRepository   = get(),
+                expenseRepository = get(),
+                sharedPreferences = get()
+            )
+        }
+
+        single<AppLifecycleObserver> {
+            AppLifecycleObserver(syncManager = get())
+        }
     }
 }

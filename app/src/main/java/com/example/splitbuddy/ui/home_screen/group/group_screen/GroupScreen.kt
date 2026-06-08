@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.splitbuddy.ui.components.EmptyStateView
+import com.example.splitbuddy.ui.components.OfflineBanner
 import com.example.splitbuddy.ui.home_screen.expense.ExpenseListCard
 import com.example.splitbuddy.ui.theme.gradient2
 import org.koin.androidx.compose.koinViewModel
@@ -39,6 +40,7 @@ fun GroupScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
+        OfflineBanner(isOffline = state.value.isOffline)
         Box(
             modifier = Modifier
                 .padding(16.dp)

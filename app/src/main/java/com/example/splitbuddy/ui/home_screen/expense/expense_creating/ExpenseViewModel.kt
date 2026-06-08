@@ -5,8 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.splitbuddy.data.local.model.TripManager
 import com.example.splitbuddy.data.remote.expense.ExpenseRequest
 import com.example.splitbuddy.data.remote.expense.ShareRequest
+import com.example.splitbuddy.data.util.Resource
+import com.example.splitbuddy.data.util.toWriteMessage
 import com.example.splitbuddy.domain.usecase.expense.CreateExpenseUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
+import com.example.splitbuddy.ui.util.SnackbarController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -223,6 +226,7 @@ class ExpenseViewModel(
 
     fun saveExpense(groupId: String) {
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
             val s = _state.value
 
             val shares = s.members.mapIndexed { index, member ->
@@ -255,8 +259,14 @@ class ExpenseViewModel(
                 shares = shares
             )
 
-            createExpenseUseCase(request)
-            _state.value = ExpenseUiState()
+            when (val result = createExpenseUseCase(request)) {
+                is Resource.Success -> _state.value = ExpenseUiState()
+                is Resource.Error   -> {
+                    _state.update { it.copy(isLoading = false) }
+                    SnackbarController.show(result.error.toWriteMessage())
+                }
+                else -> { }
+            }
         }
     }
 
