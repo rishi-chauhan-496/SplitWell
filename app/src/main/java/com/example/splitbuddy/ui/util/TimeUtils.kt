@@ -1,4 +1,4 @@
-package com.example.splitbuddy.ui.components
+package com.example.splitbuddy.ui.util
 
 
 import java.text.SimpleDateFormat

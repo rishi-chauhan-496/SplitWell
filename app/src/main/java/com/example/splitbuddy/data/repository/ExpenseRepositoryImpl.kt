@@ -7,7 +7,11 @@ import com.example.splitbuddy.data.local.query.UserQuery
 import com.example.splitbuddy.data.remote.expense.ExpenseApiInterface
 import com.example.splitbuddy.data.remote.expense.ExpenseRequest
 import com.example.splitbuddy.data.remote.user.UserApiInterface
+import com.example.splitbuddy.data.util.Resource
+import com.example.splitbuddy.data.util.toAppError
 import com.example.splitbuddy.domain.repository.ExpenseRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class ExpenseRepositoryImpl(
     private val expenseApiInterface: ExpenseApiInterface,
@@ -17,91 +21,174 @@ class ExpenseRepositoryImpl(
     private val userApiInterface: UserApiInterface
 ) : ExpenseRepository {
 
-    override suspend fun getAllExpense(groupId: String): List<Expense> {
+    // ── Observable Flow ───────────────────────────────────────────────────────
 
-        val remoteData = expenseApiInterface.getAllExpense()
+    private val _expensesFlow = MutableStateFlow<Resource<List<Expense>>>(
+        Resource.Success(emptyList())
+    )
+    override val expensesFlow: StateFlow<Resource<List<Expense>>> = _expensesFlow
 
-        remoteData.forEach { expenseResponse ->
-            try {
-                syncUserIfNeeded(expenseResponse.paidByUser)
-                expenseQuery.insertExpense(expenseResponse)
+    // Current groupId being observed — set when group screen opens
+    private var currentGroupId: String = ""
 
-                expenseResponse.shares.forEach { share ->
-                    try {
-                        syncUserIfNeeded(share.userId)
-                        expenseShareQuery.insertExpenseShare(
-                            share.copy(expenseId = expenseResponse.id)
-                        )
-                    } catch (_: Exception) { }
-                }
-            } catch (_: Exception) { }
+    // ── Sync ──────────────────────────────────────────────────────────────────
+
+    override suspend fun sync() {
+        if (currentGroupId.isBlank()) return
+        try {
+            val remoteData = expenseApiInterface.getAllExpense()
+
+            remoteData.forEach { expenseResponse ->
+                try {
+                    syncUserIfNeeded(expenseResponse.paidByUser)
+                    expenseQuery.insertExpense(expenseResponse)
+
+                    expenseResponse.shares.forEach { share ->
+                        try {
+                            syncUserIfNeeded(share.userId)
+                            expenseShareQuery.insertExpenseShare(
+                                share.copy(expenseId = expenseResponse.id)
+                            )
+                        } catch (_: Exception) { }
+                    }
+                } catch (_: Exception) { }
+            }
+
+            _expensesFlow.value = Resource.Success(
+                expenseQuery.getExpenseByTripId(currentGroupId)
+            )
+
+        } catch (e: Exception) {
+            _expensesFlow.value = Resource.Error(
+                error = e.toAppError(),
+                data  = expenseQuery.getExpenseByTripId(currentGroupId)
+            )
         }
-
-        return expenseQuery.getExpenseByTripId(groupId)
     }
 
-    override suspend fun createExpense(request: ExpenseRequest): Expense {
+    override suspend fun getAllExpense(groupId: String): Resource<List<Expense>> {
+        currentGroupId = groupId
 
-        val response = expenseApiInterface.createExpense(request)
+        try {
+            val remoteData = expenseApiInterface.getAllExpense()
 
-        syncUserIfNeeded(response.paidByUser)
-        expenseQuery.insertExpense(response)
+            remoteData.forEach { expenseResponse ->
+                try {
+                    syncUserIfNeeded(expenseResponse.paidByUser)
+                    expenseQuery.insertExpense(expenseResponse)
 
-        response.shares.forEach {
-            try {
-                syncUserIfNeeded(it.userId)
-                expenseShareQuery.insertExpenseShare(
-                    it.copy(expenseId = response.id)
+                    expenseResponse.shares.forEach { share ->
+                        try {
+                            syncUserIfNeeded(share.userId)
+                            expenseShareQuery.insertExpenseShare(
+                                share.copy(expenseId = expenseResponse.id)
+                            )
+                        } catch (_: Exception) { }
+                    }
+                } catch (_: Exception) { }
+            }
+
+            val fresh = expenseQuery.getExpenseByTripId(groupId)
+            _expensesFlow.value = Resource.Success(fresh)
+            return Resource.Success(fresh)
+
+        } catch (e: Exception) {
+            val local = expenseQuery.getExpenseByTripId(groupId)
+            _expensesFlow.value = Resource.Error(error = e.toAppError(), data = local)
+            return Resource.Error(error = e.toAppError(), data = local)
+        }
+    }
+
+    // ── Write operations ──────────────────────────────────────────────────────
+
+    override suspend fun createExpense(request: ExpenseRequest): Resource<Expense> {
+        return try {
+            val response = expenseApiInterface.createExpense(request)
+
+            syncUserIfNeeded(response.paidByUser)
+            expenseQuery.insertExpense(response)
+
+            response.shares.forEach {
+                try {
+                    syncUserIfNeeded(it.userId)
+                    expenseShareQuery.insertExpenseShare(
+                        it.copy(expenseId = response.id)
+                    )
+                } catch (_: Exception) { }
+            }
+
+            // Refresh flow
+            _expensesFlow.value = Resource.Success(
+                expenseQuery.getExpenseByTripId(currentGroupId)
+            )
+
+            Resource.Success(
+                expenseQuery.getExpenseById(response.id)
+                    ?: throw Exception("Expense not found locally")
+            )
+        } catch (e: Exception) {
+            Resource.Error(error = e.toAppError())
+        }
+    }
+
+    override suspend fun updateExpense(id: String, request: ExpenseRequest): Resource<Expense> {
+        return try {
+            val response = expenseApiInterface.updateExpense(id, request)
+
+            syncUserIfNeeded(response.paidByUser)
+            expenseQuery.insertExpense(response)
+
+            response.shares.forEach {
+                try {
+                    syncUserIfNeeded(it.userId)
+                    expenseShareQuery.insertExpenseShare(
+                        it.copy(expenseId = response.id)
+                    )
+                } catch (_: Exception) { }
+            }
+
+            _expensesFlow.value = Resource.Success(
+                expenseQuery.getExpenseByTripId(currentGroupId)
+            )
+
+            Resource.Success(
+                expenseQuery.getExpenseById(response.id)
+                    ?: throw Exception("Expense not found locally")
+            )
+        } catch (e: Exception) {
+            Resource.Error(error = e.toAppError())
+        }
+    }
+
+    override suspend fun deleteExpense(id: String): Resource<Unit> {
+        return try {
+            expenseApiInterface.deleteExpense(id)
+
+            val existing = expenseQuery.getExpenseById(id)
+            if (existing != null) {
+                expenseQuery.updateExpense(
+                    existing.copy(
+                        isDeleted = true,
+                        updatedAt = System.currentTimeMillis().toString()
+                    )
                 )
-            } catch (_: Exception) { }
+            }
+
+            _expensesFlow.value = Resource.Success(
+                expenseQuery.getExpenseByTripId(currentGroupId)
+            )
+
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(error = e.toAppError())
         }
-
-        return expenseQuery.getExpenseById(response.id)
-            ?: throw Exception("Expense not found locally")
     }
 
-    override suspend fun updateExpense(id: String, request: ExpenseRequest): Expense {
+    // ── Private ───────────────────────────────────────────────────────────────
 
-        val response = expenseApiInterface.updateExpense(id, request)
-
-        syncUserIfNeeded(response.paidByUser)
-        expenseQuery.insertExpense(response)
-
-        response.shares.forEach {
-            try {
-                syncUserIfNeeded(it.userId)
-                expenseShareQuery.insertExpenseShare(
-                    it.copy(expenseId = response.id)
-                )
-            } catch (_: Exception) { }
-        }
-
-        return expenseQuery.getExpenseById(response.id)
-            ?: throw Exception("Expense not found locally")
-    }
-
-    override suspend fun deleteExpense(id: String) {
-
-        // Call backend (soft delete)
-        expenseApiInterface.deleteExpense(id)
-
-        // Get existing expense from DB
-        val existing = expenseQuery.getExpenseById(id)
-            ?: return
-
-        // Mark as deleted locally
-        val updatedExpense = existing.copy(
-            isDeleted = true,
-            updatedAt = System.currentTimeMillis().toString()
-        )
-
-        // Reuse update function
-        expenseQuery.updateExpense(updatedExpense)
-    }
     private suspend fun syncUserIfNeeded(userId: String) {
         try {
-            val existing = userQuery.getUser(userId)
-            if (existing == null) {
+            if (userQuery.getUser(userId) == null) {
                 val user = userApiInterface.getUserById(userId)
                 userQuery.insertUser(user)
             }

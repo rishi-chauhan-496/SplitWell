@@ -17,7 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.splitbuddy.R
-import com.example.splitbuddy.ui.components.toTimeAgo
+import com.example.splitbuddy.ui.util.toTimeAgo
 import com.example.splitbuddy.ui.theme.Primary
 
 @Composable
