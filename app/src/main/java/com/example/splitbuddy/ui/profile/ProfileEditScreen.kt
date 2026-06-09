@@ -1,5 +1,6 @@
 package com.example.splitbuddy.ui.profile
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -29,13 +30,17 @@ fun ProfileEditScreen(
 ) {
     val viewModel: ProfileEditViewModel = koinViewModel()
     val state = viewModel.state.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(userId) {
         viewModel.load(userId)
     }
 
     LaunchedEffect(state.value.isSaved) {
-        if (state.value.isSaved) onSaved()
+        if (state.value.isSaved) {
+            Toast.makeText(context, "Profile saved", Toast.LENGTH_SHORT).show()
+            onSaved()
+        }
     }
 
     if (state.value.isLoading) {

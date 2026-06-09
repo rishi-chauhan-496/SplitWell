@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.splitbuddy.R
 import com.example.splitbuddy.ui.components.EmptyStateView
-import com.example.splitbuddy.ui.components.OfflineBanner
 import com.example.splitbuddy.ui.home_screen.expense.ExpenseListCard
 import com.example.splitbuddy.ui.theme.gradient2
 import org.koin.androidx.compose.koinViewModel
@@ -42,7 +41,6 @@ fun GroupScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        OfflineBanner(isOffline = state.value.isOffline)
         Box(
             modifier = Modifier
                 .padding(16.dp)
@@ -82,9 +80,9 @@ fun GroupScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    GroupActionButton(stringResource(R.string.group_action_add_member),  com.example.splitbuddy.R.drawable.group,      onAddMember,  Modifier.weight(1f))
-                    GroupActionButton(stringResource(R.string.group_action_settlement),  com.example.splitbuddy.R.drawable.settlement, onSettlement, Modifier.weight(1f))
-                    GroupActionButton(stringResource(R.string.group_action_add_expense), com.example.splitbuddy.R.drawable.expense,    onAddExpense, Modifier.weight(1f))
+                    GroupActionButton(stringResource(R.string.group_action_add_member),  R.drawable.group,      onAddMember,  Modifier.weight(1f))
+                    GroupActionButton(stringResource(R.string.group_action_settlement),  R.drawable.settlement, onSettlement, Modifier.weight(1f))
+                    GroupActionButton(stringResource(R.string.group_action_add_expense), R.drawable.expense,    onAddExpense, Modifier.weight(1f))
                 }
             }
         }

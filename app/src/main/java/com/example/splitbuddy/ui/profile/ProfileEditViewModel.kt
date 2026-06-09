@@ -4,7 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.splitbuddy.data.local.query.UserQuery
 import com.example.splitbuddy.data.remote.user.UpdateUserRequest
+import com.example.splitbuddy.data.util.toAppError
+import com.example.splitbuddy.data.util.toWriteMessage
 import com.example.splitbuddy.domain.usecase.user.UpdateUserUseCase
+import com.example.splitbuddy.ui.util.SnackbarController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -104,9 +107,8 @@ class ProfileEditViewModel(
                 _state.update { it.copy(isSaving = false, isSaved = true) }
 
             } catch (e: Exception) {
-                _state.update {
-                    it.copy(isSaving = false, error = e.message ?: "Failed to save")
-                }
+                _state.update { it.copy(isSaving = false) }
+                SnackbarController.show(e.toAppError().toWriteMessage())
             }
         }
     }

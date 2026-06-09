@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.splitbuddy.data.local.query.SettlementQuery
 import com.example.splitbuddy.data.local.query.UserQuery
 import com.example.splitbuddy.data.remote.settlement.SettlementRequest
+import com.example.splitbuddy.data.util.toAppError
+import com.example.splitbuddy.data.util.toWriteMessage
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
 import com.example.splitbuddy.domain.usecase.settlement.CreateSettlementUseCase
 import com.example.splitbuddy.domain.usecase.settlement.GetGroupBalancesUseCase
+import com.example.splitbuddy.ui.util.SnackbarController
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -126,13 +129,12 @@ class SettlementViewModel(
                         note       = dialog.note.ifBlank { null }
                     )
                 )
-                _uiState.update { it.copy(isSaving = false, confirmDialog = null) }
+                _uiState.update { it.copy(isSaving = false, confirmDialog = null, isSettlementRecorded = true) }
                 load(currentGroupId)
 
             } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(isSaving = false, error = e.message ?: "Failed to record settlement")
-                }
+                _uiState.update { it.copy(isSaving = false) }
+                SnackbarController.show(e.toAppError().toWriteMessage())
             }
         }
     }

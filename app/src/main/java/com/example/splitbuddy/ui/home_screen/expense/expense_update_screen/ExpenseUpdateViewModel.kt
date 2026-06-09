@@ -6,9 +6,12 @@ import com.example.splitbuddy.data.local.query.ExpenseQuery
 import com.example.splitbuddy.data.local.query.ExpenseShareQuery
 import com.example.splitbuddy.data.remote.expense.ExpenseRequest
 import com.example.splitbuddy.data.remote.expense.ShareRequest
+import com.example.splitbuddy.data.util.toAppError
+import com.example.splitbuddy.data.util.toWriteMessage
 import com.example.splitbuddy.domain.usecase.expense.UpdateExpenseUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
 import com.example.splitbuddy.ui.home_screen.expense.expense_creating.SplitMethod
+import com.example.splitbuddy.ui.util.SnackbarController
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -226,28 +229,12 @@ class ExpenseUpdateViewModel(
                     groupId     = groupId,
                     shares      = shares
                 )
-
-                // 📋 Log exactly what we're sending — check Logcat for "UPDATE_REQUEST"
-                android.util.Log.d("UPDATE_REQUEST", "expenseId=$expenseId")
-                android.util.Log.d("UPDATE_REQUEST", "title=${request.title}")
-                android.util.Log.d("UPDATE_REQUEST", "amount=${request.amount}")
-                android.util.Log.d("UPDATE_REQUEST", "splitMethod=${request.splitMethod}")
-                android.util.Log.d("UPDATE_REQUEST", "paidByUser=${request.paidByUser}")
-                android.util.Log.d("UPDATE_REQUEST", "groupId=${request.groupId}")
-                request.shares.forEachIndexed { i, share ->
-                    android.util.Log.d("UPDATE_REQUEST", "share[$i] userId=${share.userId} amount=${share.shareAmount} included=${share.isIncluded} percent=${share.sharePercent}")
-                }
-                val shareSum = request.shares.sumOf { it.shareAmount.toDoubleOrNull() ?: 0.0 }
-                android.util.Log.d("UPDATE_REQUEST", "shareSum=$shareSum vs amount=$total")
-
                 updateExpenseUseCase(expenseId, request)
                 _state.update { it.copy(isSaving = false, isUpdated = true) }
 
             } catch (e: Exception) {
-                android.util.Log.e("UPDATE_REQUEST", "Error: ${e.message}")
-                _state.update {
-                    it.copy(isSaving = false, error = e.message ?: "Something went wrong")
-                }
+                _state.update { it.copy(isSaving = false) }
+                SnackbarController.show(e.toAppError().toWriteMessage())
             }
         }
     }

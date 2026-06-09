@@ -28,4 +28,9 @@ interface UserApiService {
         @Path("id") userId: String,
         @Body request: UpdateUserRequest
     ): UserResponse
+
+    @GET("users/{id}/friends")
+    suspend fun getUserFriends(
+        @Path("id") userId: String
+    ): List<FriendResponse>
 }

@@ -1,7 +1,6 @@
 package com.example.splitbuddy.ui.home_screen.dashboard
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,7 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.splitbuddy.R
-import com.example.splitbuddy.ui.components.LoadingView
+import com.example.splitbuddy.ui.components.ScreenStateWrapper
 import com.example.splitbuddy.ui.home_screen.expense.ExpenseListCard
 import com.example.splitbuddy.ui.home_screen.group.GroupListCard
 import com.example.splitbuddy.ui.theme.Primary
@@ -35,68 +34,66 @@ fun DashboardScreen(userId: String) {
         viewModel.load(userId)
     }
 
-    if (state.isLoading) {
-        LoadingView()
-        return
-    }
+    ScreenStateWrapper(isLoading = state.isLoading) {
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 24.dp)
-    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
 
-        // ── Section 1: Greeting ──────────────────────────────────────────────
-        item {
-            GreetingHeader(userName = state.userName)
-        }
+            // ── Section 1: Greeting ──────────────────────────────────────────────
+            item {
+                GreetingHeader(userName = state.userName)
+            }
 
-        // ── Section 2: Summary Cards ─────────────────────────────────────────
-        item {
-            SummaryCardsRow(
-                totalSpent = state.totalSpent,
-                youAreOwed = state.youAreOwed,
-                youOwe     = state.youOwe
-            )
-        }
+            // ── Section 2: Summary Cards ─────────────────────────────────────────
+            item {
+                SummaryCardsRow(
+                    totalSpent = state.totalSpent,
+                    youAreOwed = state.youAreOwed,
+                    youOwe = state.youOwe
+                )
+            }
 
-        // ── Section 3: Recent Groups ──────────────────────────────────────────
-        item {
-            SectionHeader(title = stringResource(R.string.dashboard_recent_groups))
-        }
+            // ── Section 3: Recent Groups ──────────────────────────────────────────
+            item {
+                SectionHeader(title = stringResource(R.string.dashboard_recent_groups))
+            }
 
-        if (state.recentGroups.isEmpty()) {
-            item { EmptyHint(text = stringResource(R.string.dashboard_empty_groups)) }
-        } else {
-            items(state.recentGroups) { group ->
-                // Wrapped in a Box so horizontal padding matches the rest of the screen
-                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    GroupListCard(
-                        groupName    = group.groupName,
-                        totalMember  = group.totalMember,
-                        totalExpense = group.totalExpense,
-                        totalAmount  = group.totalAmount,
-                        createdAt    = group.createdAt,
-                        onClick      = {} // No navigation from Dashboard
-                    )
+            if (state.recentGroups.isEmpty()) {
+                item { EmptyHint(text = stringResource(R.string.dashboard_empty_groups)) }
+            } else {
+                items(state.recentGroups) { group ->
+                    // Wrapped in a Box so horizontal padding matches the rest of the screen
+                    Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        GroupListCard(
+                            groupName = group.groupName,
+                            totalMember = group.totalMember,
+                            totalExpense = group.totalExpense,
+                            totalAmount = group.totalAmount,
+                            createdAt = group.createdAt,
+                            onClick = {} // No navigation from Dashboard
+                        )
+                    }
                 }
             }
-        }
 
-        // ── Section 4: Recent Expenses ────────────────────────────────────────
-        item {
-            SectionHeader(title = stringResource(R.string.dashboard_recent_expenses))
-        }
+            // ── Section 4: Recent Expenses ────────────────────────────────────────
+            item {
+                SectionHeader(title = stringResource(R.string.dashboard_recent_expenses))
+            }
 
-        if (state.recentExpenses.isEmpty()) {
-            item { EmptyHint(text = stringResource(R.string.dashboard_empty_expenses)) }
-        } else {
-            items(state.recentExpenses) { expense ->
-                ExpenseListCard(
-                    title     = expense.title,
-                    by        = expense.paidByName,
-                    amount    = expense.amount,
-                    createdAt = expense.createdAt
-                )
+            if (state.recentExpenses.isEmpty()) {
+                item { EmptyHint(text = stringResource(R.string.dashboard_empty_expenses)) }
+            } else {
+                items(state.recentExpenses) { expense ->
+                    ExpenseListCard(
+                        title = expense.title,
+                        by = expense.paidByName,
+                        amount = expense.amount,
+                        createdAt = expense.createdAt
+                    )
+                }
             }
         }
     }

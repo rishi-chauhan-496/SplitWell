@@ -1,5 +1,6 @@
 package com.example.splitbuddy.ui.home_screen.group.group_add_member_screen
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,9 +34,15 @@ fun AddMemberScreen(
 ) {
     val viewModel: AddMemberViewModel = koinViewModel()
     val state = viewModel.state.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(groupId) { viewModel.load(groupId) }
-    LaunchedEffect(state.value.isSaved) { if (state.value.isSaved) onBack() }
+    LaunchedEffect(state.value.isSaved) {
+        if (state.value.isSaved) {
+            Toast.makeText(context, "Members added", Toast.LENGTH_SHORT).show()
+            onBack()
+        }
+    }
 
     Column(
         modifier = Modifier

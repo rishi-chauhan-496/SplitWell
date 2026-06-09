@@ -3,6 +3,7 @@ package com.example.splitbuddy.ui.home_screen.settlement
 data class SettlementUiState(
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
+    val isSettlementRecorded: Boolean = false,
     val suggestions: List<SuggestionItem> = emptyList(),
     val confirmDialog: ConfirmDialogState? = null,
     val error: String? = null

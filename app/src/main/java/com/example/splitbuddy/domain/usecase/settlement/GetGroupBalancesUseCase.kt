@@ -15,18 +15,17 @@ class GetGroupBalancesUseCase(
     suspend operator fun invoke(groupId: String): List<SettlementSuggestion> =
         withContext(Dispatchers.IO) {
 
-            // 1. Load all expenses for the group
+            // Query 1 — all expenses for the group
             val expenses = expenseQuery.getExpenseByTripId(groupId)
 
-            // 2. Load shares for every expense — grouped by expenseId
-            val sharesByExpense = expenses.associate { expense ->
-                expense.id to expenseShareQuery.getSharesByExpenseId(expense.id)
-            }
+            // Query 2 — ALL shares for the group in one shot (no loop!)
+            val allShares = expenseShareQuery.getSharesByGroupId(groupId)
 
-            // 3. Calculate net balances
+            // Group shares by expenseId in memory — zero DB calls
+            val sharesByExpense = allShares.groupBy { it.expenseId }
+
+            // Calculate + simplify
             val netBalances = calculator.calculateNetBalances(expenses, sharesByExpense)
-
-            // 4. Simplify into minimum transactions
             calculator.simplifyDebts(netBalances)
         }
 }

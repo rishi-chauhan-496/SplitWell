@@ -58,6 +58,11 @@ fun GroupUpdatingScreen(
             onBack()
         }
     }
+    LaunchedEffect(state.value.isMembersRemoved) {
+        if (state.value.isMembersRemoved) {
+            Toast.makeText(context, "Members removed", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     if (state.value.isLoading) {
         LoadingView()

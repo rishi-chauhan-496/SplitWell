@@ -41,6 +41,7 @@ import com.example.splitbuddy.domain.usecase.settlement.CreateSettlementUseCase
 import com.example.splitbuddy.domain.usecase.settlement.GetGroupBalancesUseCase
 import com.example.splitbuddy.domain.usecase.user.GetAllUserUseCase
 import com.example.splitbuddy.domain.usecase.user.GetOrCreateUserUseCase
+import com.example.splitbuddy.domain.usecase.user.GetUserFriendsUseCase
 import com.example.splitbuddy.domain.usecase.user.UpdateUserUseCase
 import com.example.splitbuddy.ui.home_screen.dashboard.DashboardViewModel
 import com.example.splitbuddy.ui.home_screen.expense.expense_creating.ExpenseViewModel
@@ -222,6 +223,9 @@ object DIContainer {
                 calculator        = get()
             )
         }
+        single<GetUserFriendsUseCase> {
+            GetUserFriendsUseCase(userApiInterface = get())
+        }
 
         single<android.content.SharedPreferences> {
             androidContext().getSharedPreferences("SplitBuddyPrefs", android.content.Context.MODE_PRIVATE)
@@ -306,8 +310,8 @@ object DIContainer {
                 getGroupBalancesUseCase      = get()
             )
         }
-        viewModel<FriendListViewModel> {
-            FriendListViewModel(userQuery = get())
+        single<GetUserFriendsUseCase> {
+            GetUserFriendsUseCase(userApiInterface = get())
         }
         viewModel<SettlementViewModel> {
             SettlementViewModel(

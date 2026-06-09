@@ -8,5 +8,6 @@ data class GroupUpdateUiState(
     val members: List<TripManager> = emptyList(),
     val selectedToRemove: Set<String> = emptySet(),
     val isUpdated: Boolean = false,
-    val isDeleted: Boolean = false
+    val isDeleted: Boolean = false,
+    val isMembersRemoved: Boolean = false
 )
