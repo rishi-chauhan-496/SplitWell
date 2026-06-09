@@ -6,10 +6,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -21,15 +24,16 @@ import com.example.splitbuddy.ui.components.SplitBuddyCard
 import com.example.splitbuddy.ui.theme.Primary
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettlementScreen(groupId: String) {
 
     val viewModel: SettlementViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsState()
-    val context = androidx.compose.ui.platform.LocalContext.current
-
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) { viewModel.load(groupId) }
+
     LaunchedEffect(state.isSettlementRecorded) {
         if (state.isSettlementRecorded) {
             Toast.makeText(context, "Settlement recorded", Toast.LENGTH_SHORT).show()
@@ -38,37 +42,38 @@ fun SettlementScreen(groupId: String) {
 
     state.confirmDialog?.let { dialog ->
         ConfirmSettlementDialog(
-            dialog = dialog,
-            isSaving = state.isSaving,
+            dialog       = dialog,
+            isSaving     = state.isSaving,
             onNoteChange = viewModel::onNoteChange,
-            onDismiss = viewModel::onDismissDialog,
-            onConfirm = viewModel::onConfirmSettlement
+            onDismiss    = viewModel::onDismissDialog,
+            onConfirm    = viewModel::onConfirmSettlement
         )
     }
 
     ScreenStateWrapper(
-        isLoading = state.isLoading,
-        isEmpty = state.suggestions.isEmpty(),
+        isLoading    = state.isLoading,
+        isEmpty      = state.suggestions.isEmpty(),
         emptyMessage = "All settled! 🎉\nNo pending payments in this group"
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                horizontal = 16.dp,
-                vertical = 12.dp
-            )
+        PullToRefreshBox(
+            isRefreshing = state.isRefreshing,
+            onRefresh    = { viewModel.load(groupId, isRefresh = true) }
         ) {
-            items(state.suggestions) { item ->
-                SuggestionCard(
-                    item = item,
-                    onMarkPaid = {
-                        // Only open dialog if not already paid
-                        if (!item.isPaid) viewModel.onMarkPaidClick(item)
-                    }
+            LazyColumn(
+                modifier       = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    horizontal = 16.dp,
+                    vertical   = 12.dp
                 )
+            ) {
+                items(state.suggestions) { item ->
+                    SuggestionCard(
+                        item       = item,
+                        onMarkPaid = { if (!item.isPaid) viewModel.onMarkPaidClick(item) }
+                    )
+                }
             }
         }
-
     }
 }
 

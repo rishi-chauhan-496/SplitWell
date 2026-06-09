@@ -30,13 +30,17 @@ class SettlementViewModel(
 
     private var currentGroupId = ""
 
-    fun load(groupId: String) {
+    fun load(groupId: String, isRefresh: Boolean = false) {
         currentGroupId = groupId
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-
+            _uiState.update {
+                it.copy(
+                    isLoading    = !isRefresh,
+                    isRefreshing = isRefresh,
+                    error        = null
+                )
+            }
             try {
-                // Run all three in parallel
                 val membersDeferred     = async { getGroupMembersUseCase(groupId) }
                 val suggestionsDeferred = async { getGroupBalancesUseCase(groupId) }
                 val settlementsDeferred = async { settlementQuery.getSettlementByTrip(groupId) }
@@ -45,26 +49,20 @@ class SettlementViewModel(
                 val suggestions = suggestionsDeferred.await()
                 val settlements = settlementsDeferred.await()
 
-                // userId → display name from group members
                 val nameMap = members.associate { m ->
                     m.userId to m.userName.ifBlank { m.userId }
                 }
 
-                // Build a set of already-paid pairs for quick lookup
-                // Key = "fromUserId|toUserId"
                 val paidPairs = settlements
                     .filter { !it.isDeleted }
                     .map    { "${it.fromUserId}|${it.toUserId}" }
                     .toSet()
 
-                // Map suggestions → SuggestionItem, mark isPaid from settlement table
                 val items = suggestions.map { s ->
                     val fromName = nameMap[s.fromUserId]
-                        ?: userQuery.getUser(s.fromUserId)?.userName
-                        ?: s.fromUserId
+                        ?: userQuery.getUser(s.fromUserId)?.userName ?: s.fromUserId
                     val toName = nameMap[s.toUserId]
-                        ?: userQuery.getUser(s.toUserId)?.userName
-                        ?: s.toUserId
+                        ?: userQuery.getUser(s.toUserId)?.userName ?: s.toUserId
 
                     SuggestionItem(
                         fromUserId = s.fromUserId,
@@ -77,13 +75,15 @@ class SettlementViewModel(
                 }
 
                 _uiState.update {
-                    it.copy(isLoading = false, suggestions = items)
+                    it.copy(
+                        isLoading    = false,
+                        isRefreshing = false,
+                        suggestions  = items
+                    )
                 }
-
             } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(isLoading = false, error = e.message ?: "Failed to load")
-                }
+                _uiState.update { it.copy(isLoading = false, isRefreshing = false) }
+                SnackbarController.show(e.toAppError().toWriteMessage())
             }
         }
     }
