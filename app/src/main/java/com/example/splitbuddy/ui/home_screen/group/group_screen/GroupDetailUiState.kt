@@ -4,6 +4,7 @@ import com.example.splitbuddy.data.local.model.Expense
 
 data class GroupDetailUiState(
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val groupName: String = "",
     val memberCount: Int = 0,
     val expenses: List<Expense> = emptyList(),

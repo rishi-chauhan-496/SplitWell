@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +25,7 @@ import com.example.splitbuddy.ui.home_screen.expense.ExpenseListCard
 import com.example.splitbuddy.ui.theme.gradient2
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupScreen(
     groupId: String,
@@ -92,15 +95,23 @@ fun GroupScreen(
         if (state.value.expenses.isEmpty()) {
             EmptyStateView(message = stringResource(R.string.group_empty_expenses), modifier = Modifier.weight(1f))
         } else {
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(state.value.expenses) { expense ->
-                    ExpenseListCard(
-                        title     = expense.title,
-                        by        = expense.paidByUserName,
-                        amount    = expense.amount,
-                        createdAt = expense.createdAt,
-                        onClick   = { onExpenseClick(expense.id) }
-                    )
+            PullToRefreshBox(
+                isRefreshing = state.value.isRefreshing,
+                onRefresh    = { viewModel.refresh(groupId) },
+                modifier     = Modifier.weight(1f)  // keep the existing weight here
+            ) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()  // remove weight from here, moved to PullToRefreshBox
+                ) {
+                    items(state.value.expenses) { expense ->
+                        ExpenseListCard(
+                            title = expense.title,
+                            by = expense.paidByUserName,
+                            amount = expense.amount,
+                            createdAt = expense.createdAt,
+                            onClick = { onExpenseClick(expense.id) }
+                        )
+                    }
                 }
             }
         }

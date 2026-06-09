@@ -40,6 +40,7 @@ class GroupDetailViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading   = false,
+                        isRefreshing = false,
                         groupName   = group?.tripTitle ?: "",
                         memberCount = members.size,
                         expenses    = expenses,
@@ -54,6 +55,13 @@ class GroupDetailViewModel(
         // Load expenses
         viewModelScope.launch {
             getAllExpenseByGroupIdUseCase.load(groupId)
+        }
+    }
+
+    fun refresh(groupId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshing = true) }
+            getAllExpenseByGroupIdUseCase.load(groupId)  // re-triggers network, flow gets new data
         }
     }
 }
