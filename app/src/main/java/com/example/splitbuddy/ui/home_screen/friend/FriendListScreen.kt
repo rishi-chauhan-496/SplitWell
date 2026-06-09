@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,33 +20,35 @@ import com.example.splitbuddy.ui.components.ScreenStateWrapper
 import com.example.splitbuddy.ui.components.SplitBuddyCard
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FriendListScreen(ownerID: String) {
 
     val viewModel: FriendListViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.load(ownerID)
-    }
+    LaunchedEffect(Unit) { viewModel.load(ownerID) }
 
     ScreenStateWrapper(
-        isLoading = state.isLoading,
-        isEmpty = state.friends.isEmpty(),
+        isLoading    = state.isLoading,
+        isEmpty      = state.friends.isEmpty(),
         emptyMessage = stringResource(R.string.friends_empty_message)
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+        PullToRefreshBox(
+            isRefreshing = state.isRefreshing,
+            onRefresh    = { viewModel.load(ownerID, isRefresh = true) }
         ) {
-            items(state.friends) { friend ->
-                FriendCard(friend = friend)
+            LazyColumn(
+                modifier       = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                items(state.friends) { friend ->
+                    FriendCard(friend = friend)
+                }
             }
         }
-
     }
 }
-
 @Composable
 private fun FriendCard(friend: FriendItem) {
     SplitBuddyCard(elevation = 8.dp) {

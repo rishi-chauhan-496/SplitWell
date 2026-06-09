@@ -2,6 +2,7 @@ package com.example.splitbuddy.ui.home_screen.friend
 
 data class FriendListUiState(
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val friends: List<FriendItem> = emptyList()
 )
 

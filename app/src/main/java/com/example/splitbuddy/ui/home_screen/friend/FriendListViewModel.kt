@@ -18,17 +18,25 @@ class FriendListViewModel(
     private val _uiState = MutableStateFlow(FriendListUiState())
     val uiState: StateFlow<FriendListUiState> = _uiState
 
-    fun load(ownerID: String) {
+    fun load(ownerID: String, isRefresh: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-
+            _uiState.update {
+                it.copy(
+                    isLoading    = !isRefresh,   // full screen loader only on first load
+                    isRefreshing = isRefresh     // small indicator on pull to refresh
+                )
+            }
             try {
                 val friends = getUserFriendsUseCase(ownerID)
                 _uiState.update {
-                    it.copy(isLoading = false, friends = friends)
+                    it.copy(
+                        isLoading    = false,
+                        isRefreshing = false,
+                        friends      = friends
+                    )
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(isLoading = false, isRefreshing = false) }
                 SnackbarController.show(e.toAppError().toWriteMessage())
             }
         }
