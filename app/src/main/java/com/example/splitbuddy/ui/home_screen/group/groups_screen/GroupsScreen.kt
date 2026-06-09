@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +21,7 @@ import com.example.splitbuddy.ui.home_screen.group.GroupListCard
 import com.example.splitbuddy.ui.theme.Primary
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupsScreen(
     userId: String,
@@ -43,22 +46,26 @@ fun GroupsScreen(
                 isEmpty = state.value.groups.isEmpty(),
                 emptyMessage = stringResource(R.string.groups_empty_message)
             ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp)
+                PullToRefreshBox(
+                    isRefreshing = state.value.isRefreshing,
+                    onRefresh = { viewModel.refresh(userId) }
                 ) {
-                    items(state.value.groups) { group ->
-                        GroupListCard(
-                            groupName = group.groupName,
-                            totalMember = group.totalMember,
-                            totalExpense = group.totalExpense,
-                            totalAmount = group.totalAmount,
-                            createdAt = group.createdAt,
-                            onClick = { onNext(group.id) }
-                        )
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp)
+                    ) {
+                        items(state.value.groups) { group ->
+                            GroupListCard(
+                                groupName = group.groupName,
+                                totalMember = group.totalMember,
+                                totalExpense = group.totalExpense,
+                                totalAmount = group.totalAmount,
+                                createdAt = group.createdAt,
+                                onClick = { onNext(group.id) }
+                            )
+                        }
                     }
                 }
-
             }
         }
 
