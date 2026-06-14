@@ -97,7 +97,7 @@ fun GroupListCard(
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = "₹${"%.2f".format(totalAmount)}",
+                    text = stringResource(R.string.amount_rupee_format, "%.2f".format(totalAmount)),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = Primary

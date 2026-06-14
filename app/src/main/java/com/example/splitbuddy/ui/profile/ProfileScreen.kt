@@ -8,9 +8,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.splitbuddy.R
 import com.example.splitbuddy.ui.components.InitialsAvatar
 import com.example.splitbuddy.ui.components.LoadingView
 import com.example.splitbuddy.ui.theme.Primary
@@ -81,22 +83,22 @@ fun ProfileScreen(
 
         // ── Info cards ────────────────────────────────────────────────────────
         ProfileInfoCard(
-            label = "Email",
+            label = stringResource(R.string.profile_label_email),
             value = state.value.email.ifBlank { "Not set" }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         ProfileInfoCard(
-            label = "Phone Number",
+            label = stringResource(R.string.profile_label_phone),
             value = state.value.contact.ifBlank { "Not set" }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         ProfileInfoCard(
-            label = "Username",
-            value = state.value.userName.ifBlank { "Not set" }
+            label = stringResource(R.string.profile_label_username),
+            value = state.value.userName.ifBlank { stringResource(R.string.not_set) }
         )
     }
 }

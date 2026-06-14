@@ -88,7 +88,7 @@ fun ExpenseDetailScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "₹${"%.2f".format(expense.amount)}",
+                                text = stringResource(R.string.amount_rupee_format, "%.2f".format(expense.amount)),
                                 color = Color.White,
                                 fontSize = 32.sp,
                                 fontWeight = FontWeight.Bold
@@ -133,7 +133,7 @@ fun ExpenseDetailScreen(
 
                     if (includedShares.isEmpty()) {
                         EmptyStateView(
-                            message = "No split data found",
+                            message = stringResource(R.string.expense_no_split_data),
                             modifier = Modifier.weight(1f)
                         )
                     } else {

@@ -13,9 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.splitbuddy.R
 import com.example.splitbuddy.ui.components.EmptyStateView
 import com.example.splitbuddy.ui.components.OfflineBanner
 import com.example.splitbuddy.ui.home_screen.expense.ExpenseListCard
@@ -57,19 +59,19 @@ fun GroupScreen(
             ) {
                 Column {
                     Text(
-                        text = state.value.groupName.ifBlank { "Group" },
+                        text = state.value.groupName.ifBlank { stringResource(R.string.group_fallback_name) },
                         color = Color.White,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Text("${state.value.memberCount} members", color = Color.White.copy(0.8f), fontSize = 14.sp)
-                        Text("${state.value.expenses.size} expenses", color = Color.White.copy(0.8f), fontSize = 14.sp)
+                        Text(stringResource(R.string.group_member_count, state.value.memberCount), color = Color.White.copy(0.8f), fontSize = 14.sp)
+                        Text(stringResource(R.string.group_expense_count, state.value.expenses.size), color = Color.White.copy(0.8f), fontSize = 14.sp)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Total: ₹${"%.2f".format(state.value.totalAmount)}",
+                        text = stringResource(R.string.group_total_amount, "%.2f".format(state.value.totalAmount)),
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold
@@ -80,9 +82,9 @@ fun GroupScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    GroupActionButton("Add Member",  com.example.splitbuddy.R.drawable.group,      onAddMember,  Modifier.weight(1f))
-                    GroupActionButton("Settlement",  com.example.splitbuddy.R.drawable.settlement, onSettlement, Modifier.weight(1f))
-                    GroupActionButton("Add Expense", com.example.splitbuddy.R.drawable.expense,    onAddExpense, Modifier.weight(1f))
+                    GroupActionButton(stringResource(R.string.group_action_add_member),  com.example.splitbuddy.R.drawable.group,      onAddMember,  Modifier.weight(1f))
+                    GroupActionButton(stringResource(R.string.group_action_settlement),  com.example.splitbuddy.R.drawable.settlement, onSettlement, Modifier.weight(1f))
+                    GroupActionButton(stringResource(R.string.group_action_add_expense), com.example.splitbuddy.R.drawable.expense,    onAddExpense, Modifier.weight(1f))
                 }
             }
         }
@@ -90,7 +92,7 @@ fun GroupScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         if (state.value.expenses.isEmpty()) {
-            EmptyStateView(message = "No expenses yet", modifier = Modifier.weight(1f))
+            EmptyStateView(message = stringResource(R.string.group_empty_expenses), modifier = Modifier.weight(1f))
         } else {
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(state.value.expenses) { expense ->

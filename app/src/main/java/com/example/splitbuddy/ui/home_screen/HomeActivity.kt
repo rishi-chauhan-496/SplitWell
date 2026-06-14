@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -35,6 +36,7 @@ import com.example.splitbuddy.ui.home_screen.group.group_creation.GroupCreationS
 import com.example.splitbuddy.ui.home_screen.group.group_screen.GroupScreen
 import com.example.splitbuddy.ui.home_screen.group.group_updating.GroupUpdatingScreen
 import com.example.splitbuddy.ui.home_screen.group.groups_screen.GroupsScreen
+import com.example.splitbuddy.ui.home_screen.settlement.SettlementScreen
 import com.example.splitbuddy.ui.home_screen.top_bar.AppTopBar
 import com.example.splitbuddy.ui.home_screen.top_bar.TopBarState
 import com.example.splitbuddy.ui.home_screen.top_bar.TopBarViewModel
@@ -42,6 +44,9 @@ import com.example.splitbuddy.ui.profile.ProfileEditScreen
 import com.example.splitbuddy.ui.theme.SplitBuddyTheme
 import org.koin.androidx.compose.koinViewModel
 import androidx.core.content.edit
+import com.example.splitbuddy.R
+import com.example.splitbuddy.ui.home_screen.dashboard.DashboardScreen
+import com.example.splitbuddy.ui.home_screen.friend.FriendListScreen
 import com.example.splitbuddy.ui.profile.ProfileScreen
 import com.example.splitbuddy.ui.util.SnackbarController
 
@@ -78,14 +83,29 @@ fun MainScreen() {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val route = navBackStackEntry?.destination?.route
+    val titleDashboard = stringResource(R.string.topbar_dashboard)
+    val titleFriends   = stringResource(R.string.topbar_friends)
+    val strGroups        = stringResource(R.string.topbar_groups)
+    val strGroupDetails  = stringResource(R.string.topbar_group_details)
+    val strUpdateGroup   = stringResource(R.string.topbar_update_group)
+    val strCreateGroup   = stringResource(R.string.topbar_create_group)
+    val strExpenseDetail  = stringResource(R.string.topbar_expense_detail)  // ← added
+    val strEditExpense    = stringResource(R.string.topbar_expense_update)
+    val strAddMembers    = stringResource(R.string.topbar_add_members)
+    val strAddExpense    = stringResource(R.string.topbar_add_expense)
+    val strSplit         = stringResource(R.string.topbar_split)
+    val strPreview       = stringResource(R.string.topbar_preview)
+    val strMyProfile     = stringResource(R.string.topbar_my_profile)
+    val strEditProfile   = stringResource(R.string.topbar_edit_profile)
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val strSettlement = stringResource(R.string.topbar_settlement)
 
     LaunchedEffect(route) {
         when {
             route == Screen.Groups.route -> {
                 topBarViewModel.update(
-                    TopBarState(title = "Groups", isVisible = true)
+                    TopBarState(title = strGroups, isVisible = true)
                 )
             }
 
@@ -93,7 +113,7 @@ fun MainScreen() {
                 val groupId = navBackStackEntry?.arguments?.getString("groupId") ?: ""
                 topBarViewModel.update(
                     TopBarState(
-                        title = "Group Details",
+                        title = strGroupDetails,
                         isVisible = true,
                         showBack = true,
                         actions = {
@@ -113,19 +133,19 @@ fun MainScreen() {
 
             route == Screen.GroupUpdatingScreen.route -> {
                 topBarViewModel.update(
-                    TopBarState(title = "Update Group", isVisible = true, showBack = true)
+                    TopBarState(title = strUpdateGroup, isVisible = true, showBack = true)
                 )
             }
 
             route == Screen.GroupCreationScreen.route -> {
                 topBarViewModel.update(
-                    TopBarState(title = "Create Group", isVisible = true, showBack = true)
+                    TopBarState(title = strCreateGroup, isVisible = true, showBack = true)
                 )
             }
 
             route?.startsWith("addMember/") == true -> {
                 topBarViewModel.update(
-                    TopBarState(title = "Add Members", isVisible = true, showBack = true)
+                    TopBarState(title = strAddMembers, isVisible = true, showBack = true)
                 )
             }
 
@@ -134,7 +154,7 @@ fun MainScreen() {
                 val groupId = navBackStackEntry?.arguments?.getString("groupId") ?: ""
                 topBarViewModel.update(
                     TopBarState(
-                        title = "Expense Detail",
+                        title = strExpenseDetail,
                         isVisible = true,
                         showBack = true,
                         actions = {
@@ -154,14 +174,14 @@ fun MainScreen() {
 
             route?.startsWith("expenseUpdate/") == true -> {
                 topBarViewModel.update(
-                    TopBarState(title = "Edit Expense", isVisible = true, showBack = true)
+                    TopBarState(title = strEditExpense, isVisible = true, showBack = true)
                 )
             }
 
             route?.startsWith(Screen.ExpenseScreen1.route) == true -> {
                 topBarViewModel.update(
                     TopBarState(
-                        title = "Add Expense",
+                        title = strAddExpense,
                         isVisible = true,
                         showBack = true
                     )
@@ -171,7 +191,7 @@ fun MainScreen() {
             route?.startsWith(Screen.ExpenseScreen2.route) == true -> {
                 topBarViewModel.update(
                     TopBarState(
-                        title = "Split",
+                        title = strSplit,
                         isVisible = true,
                         showBack = true
                     )
@@ -181,7 +201,7 @@ fun MainScreen() {
             route?.startsWith(Screen.ExpenseScreen3.route) == true -> {
                 topBarViewModel.update(
                     TopBarState(
-                        title = "Preview",
+                        title = strPreview,
                         isVisible = true,
                         showBack = true
                     )
@@ -191,7 +211,7 @@ fun MainScreen() {
             route == BottomNavItem.Profile.route -> {
                 topBarViewModel.update(
                     TopBarState(
-                        title = "My Profile",
+                        title = strMyProfile,
                         isVisible = true,
                         showBack = false,
                         actions = {
@@ -210,10 +230,28 @@ fun MainScreen() {
             route == Screen.ProfileEditScreen.route -> {
                 topBarViewModel.update(
                     TopBarState(
-                        title = "Edit Profile",
+                        title = strEditProfile,
                         isVisible = true,
                         showBack = true
                     )
+                )
+            }
+
+            route == BottomNavItem.Dashboard.route -> {
+                topBarViewModel.update(
+                    TopBarState(title = titleDashboard, isVisible = true)
+                )
+            }
+
+            route == BottomNavItem.FriendList.route -> {
+                topBarViewModel.update(
+                    TopBarState(title = titleFriends, isVisible = true)
+                )
+            }
+
+            route?.startsWith("settlement/") == true -> {
+                topBarViewModel.update(
+                    TopBarState(title = strSettlement, isVisible = true, showBack = true)
                 )
             }
 
@@ -251,7 +289,7 @@ fun MainScreen() {
         NavHost(
             navController = navController,
             startDestination = if (isNewLogin) Screen.ProfileEditScreen.route
-                                else BottomNavItem.Groups.route,
+                                else BottomNavItem.Dashboard.route,
             modifier = Modifier.padding(paddingValues)
         ) {
 
@@ -273,6 +311,14 @@ fun MainScreen() {
                 )
             }
 
+            composable(BottomNavItem.Dashboard.route) {
+                DashboardScreen(userId = ownerID)
+            }
+
+            composable(BottomNavItem.FriendList.route) {
+                FriendListScreen(ownerID = ownerID)
+            }
+
             composable(Screen.GroupScreen.route) { backStackEntry ->
                 val groupId = backStackEntry.arguments?.getString("groupId") ?: ""
                 GroupScreen(
@@ -283,7 +329,9 @@ fun MainScreen() {
                     onAddMember = {
                         navController.navigate(Screen.AddMemberScreen.createRoute(groupId))
                     },
-                    onSettlement = { /* TODO */ },
+                    onSettlement = {
+                        navController.navigate(Screen.SettlementScreen.createRoute(groupId))
+                    },
                     onExpenseClick = { expenseId ->
                         navController.navigate(
                             Screen.ExpenseDetailScreen.createRoute(expenseId, groupId)
@@ -360,6 +408,11 @@ fun MainScreen() {
                         }
                     }
                 )
+            }
+
+            composable(Screen.SettlementScreen.route) { backStackEntry ->
+                val groupId = backStackEntry.arguments?.getString("groupId") ?: ""
+                SettlementScreen(groupId = groupId)
             }
         }
 

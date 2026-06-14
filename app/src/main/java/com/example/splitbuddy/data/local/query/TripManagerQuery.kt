@@ -135,6 +135,7 @@ class TripManagerQuery(private val dbHelper: Database) {
                 ON tm.${TripManagerTable.USER_ID} = u.${UserTable.ID}
             WHERE tm.${TripManagerTable.TRIP_ID} = ?
             AND tm.${TripManagerTable.IS_DELETED} = 0
+            AND tm.${TripManagerTable.IS_ACTIVE} = 1
             """.trimIndent(),
             arrayOf(tripId)
         )

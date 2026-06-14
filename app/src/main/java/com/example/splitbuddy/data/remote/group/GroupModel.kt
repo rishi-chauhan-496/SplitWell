@@ -59,3 +59,6 @@ data class MemberItem(
     val role: String = "MEMBER" // default
 )
 
+data class RemoveMembersRequest(
+    val userIds: List<String>
+)

@@ -92,7 +92,7 @@ fun ExpenseListCard(
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "₹${"%.2f".format(amount)}",
+                        text = stringResource(R.string.amount_rupee_format, "%.2f".format(amount)),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = Primary

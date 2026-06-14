@@ -45,4 +45,10 @@ interface GroupApiService {
         @Path("memberId") memberId: String
     ): Member
 
+    // Remove multiple members from group
+    @HTTP(method = "DELETE", path = "groups/{groupId}/members/bulk", hasBody = true)
+    suspend fun removeMembersFromGroup(
+        @Path("groupId") groupId: String,
+        @Body request: RemoveMembersRequest
+    ): List<Member>
 }

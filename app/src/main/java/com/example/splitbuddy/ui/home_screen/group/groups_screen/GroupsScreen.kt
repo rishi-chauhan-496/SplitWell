@@ -44,13 +44,13 @@ fun GroupsScreen(
                 state.value.error != null -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = "Something went wrong.\n${state.value.error}",
+                            text = stringResource(R.string.error_something_went_wrong, state.value.error ?: ""),
                             color = MaterialTheme.colorScheme.surfaceVariant
                         )
                     }
                 }
 
-                state.value.groups.isEmpty() -> EmptyStateView(message = "No groups yet\nTap + to create your first group")
+                state.value.groups.isEmpty() -> EmptyStateView(message = stringResource(R.string.groups_empty_message))
 
                 else -> {
                     LazyColumn(

@@ -1,0 +1,273 @@
+package com.example.splitbuddy.ui.home_screen.settlement
+
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.splitbuddy.ui.components.EmptyStateView
+import com.example.splitbuddy.ui.components.InitialsAvatar
+import com.example.splitbuddy.ui.components.LoadingView
+import com.example.splitbuddy.ui.theme.Primary
+import org.koin.androidx.compose.koinViewModel
+
+@Composable
+fun SettlementScreen(groupId: String) {
+
+    val viewModel: SettlementViewModel = koinViewModel()
+    val state by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) { viewModel.load(groupId) }
+
+    state.confirmDialog?.let { dialog ->
+        ConfirmSettlementDialog(
+            dialog       = dialog,
+            isSaving     = state.isSaving,
+            onNoteChange = viewModel::onNoteChange,
+            onDismiss    = viewModel::onDismissDialog,
+            onConfirm    = viewModel::onConfirmSettlement
+        )
+    }
+
+    when {
+        state.isLoading -> LoadingView()
+
+        state.suggestions.isEmpty() ->
+            EmptyStateView(
+                message = "All settled! 🎉\nNo pending payments in this group"
+            )
+
+        else -> {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    horizontal = 16.dp,
+                    vertical   = 12.dp
+                )
+            ) {
+                items(state.suggestions) { item ->
+                    SuggestionCard(
+                        item       = item,
+                        onMarkPaid = {
+                            // Only open dialog if not already paid
+                            if (!item.isPaid) viewModel.onMarkPaidClick(item)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SuggestionCard(
+    item: SuggestionItem,
+    onMarkPaid: () -> Unit
+) {
+    val isDark = isSystemInDarkTheme()
+
+    val cardColor   = if (item.isPaid)
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+    else
+        MaterialTheme.colorScheme.surface
+
+    val nameColor   = if (item.isPaid)
+        MaterialTheme.colorScheme.surfaceVariant
+    else
+        MaterialTheme.colorScheme.onSurface
+
+    val amountColor = if (item.isPaid)
+        MaterialTheme.colorScheme.surfaceVariant
+    else
+        Primary
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .shadow(
+                elevation    = if (item.isPaid) 2.dp else 6.dp,
+                shape        = RoundedCornerShape(16.dp),
+                ambientColor = if (isDark) Color.White.copy(0.05f)
+                else Primary.copy(if (item.isPaid) 0.03f else 0.1f),
+                spotColor    = if (isDark) Color.White.copy(0.05f)
+                else Primary.copy(if (item.isPaid) 0.05f else 0.15f)
+            ),
+        shape = RoundedCornerShape(16.dp),
+        color = cardColor
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 16.dp)
+        ) {
+
+            // ── Row 1: Avatars + Arrow ────────────────────────────────────
+            Row(
+                modifier          = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // From avatar — left aligned
+                Box(
+                    modifier         = Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    InitialsAvatar(name = item.fromName, size = 34.dp)
+                }
+
+                // Arrow + amount in the center
+                Column(
+                    modifier            = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text      = "₹${"%.2f".format(item.amount)}",
+                        fontSize  = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color     = amountColor
+                    )
+                    Text(
+                        text     = "———→",
+                        fontSize = 13.sp,
+                        color    = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                }
+
+                // To avatar — right aligned
+                Box(
+                    modifier         = Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    InitialsAvatar(name = item.toName, size = 34.dp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // ── Row 2: Names ──────────────────────────────────────────────
+            Row(modifier = Modifier.fillMaxWidth()) {
+                // From name — left
+                Text(
+                    text     = item.fromName,
+                    fontSize = 14.sp,
+                    color    = nameColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Start
+                )
+
+                // Empty center spacer to align under arrow
+                Spacer(modifier = Modifier.weight(0.5f))
+
+                // To name — right
+                Text(
+                    text      = item.toName,
+                    fontSize  = 14.sp,
+                    color     = nameColor,
+                    maxLines  = 1,
+                    overflow  = TextOverflow.Ellipsis,
+                    modifier  = Modifier.weight(1f),
+                    textAlign = TextAlign.End
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // ── Row 3: Button ─────────────────────────────────────────────
+            Button(
+                onClick  = onMarkPaid,
+                enabled  = !item.isPaid,
+                modifier = Modifier.fillMaxWidth(),
+                shape    = RoundedCornerShape(12.dp),
+                colors   = ButtonDefaults.buttonColors(
+                    containerColor         = Primary,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.3f)
+                )
+            ) {
+                Text(
+                    text  = if (item.isPaid) "Paid ✓" else "Mark Paid",
+                    color = if (item.isPaid)
+                        MaterialTheme.colorScheme.surfaceVariant
+                    else
+                        Color.White
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConfirmSettlementDialog(
+    dialog: ConfirmDialogState,
+    isSaving: Boolean,
+    onNoteChange: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { if (!isSaving) onDismiss() },
+        shape = RoundedCornerShape(20.dp),
+        title = {
+            Text(text = "Confirm Settlement", fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column {
+                Text(
+                    text  = "${dialog.fromName} pays ${dialog.toName}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text       = "₹${"%.2f".format(dialog.amount)}",
+                    style      = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color      = Primary
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value         = dialog.note,
+                    onValueChange = onNoteChange,
+                    label         = { Text("Note (optional)") },
+                    modifier      = Modifier.fillMaxWidth(),
+                    singleLine    = true,
+                    enabled       = !isSaving,
+                    shape         = RoundedCornerShape(12.dp)
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                enabled = !isSaving,
+                shape   = RoundedCornerShape(10.dp),
+                colors  = ButtonDefaults.buttonColors(containerColor = Primary)
+            ) {
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier    = Modifier.size(18.dp),
+                        color       = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Confirm")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !isSaving) {
+                Text("Cancel")
+            }
+        }
+    )
+}
