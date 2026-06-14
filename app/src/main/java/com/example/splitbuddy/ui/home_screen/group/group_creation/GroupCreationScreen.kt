@@ -1,5 +1,6 @@
 package com.example.splitbuddy.ui.home_screen.group.group_creation
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,9 +27,12 @@ fun GroupCreationScreen(
 ) {
     val viewModel: GroupCreationViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val toastMsg = stringResource(R.string.toast_group_created)
 
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
+            Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()
             onGroupCreated()
             viewModel.resetSuccess()
         }

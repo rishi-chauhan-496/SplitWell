@@ -21,6 +21,7 @@ class GroupsDataViewModel(
     private val getAllExpenseByGroupIdUseCase: GetAllExpenseByGroupIdUseCase
 ) : ViewModel() {
 
+    private var isUserRefreshing = false
     private val _uiState = MutableStateFlow(GroupsUiState())
     val uiState: StateFlow<GroupsUiState> = _uiState
 
@@ -30,30 +31,34 @@ class GroupsDataViewModel(
             getAllGroupsUseCase.observe().collect { resource ->
                 when (resource) {
                     is Resource.Success -> {
+                        isUserRefreshing = false
                         val summaries = buildSummaries(resource.data)
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
+                                isRefreshing = false,
                                 groups    = summaries,
-                                isOffline = false,
                                 error     = null
                             )
                         }
                     }
                     is Resource.Error -> {
+                        isUserRefreshing = false
                         val summaries = buildSummaries(resource.data ?: emptyList())
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
+                                isRefreshing = false,
                                 groups    = summaries,
-                                isOffline = resource.error is AppError.NetworkError,
                                 error     = if (resource.error is AppError.NetworkError) null
                                 else resource.error.toMessage()
                             )
                         }
                     }
                     is Resource.Loading -> {
-                        _uiState.update { it.copy(isLoading = true) }
+                        if (!isUserRefreshing) {
+                            _uiState.update { it.copy(isLoading = true) }
+                        }
                     }
                 }
             }
@@ -62,6 +67,16 @@ class GroupsDataViewModel(
         // Trigger initial sync
         viewModelScope.launch {
             getAllGroupsUseCase.sync(userId)
+        }
+    }
+
+    fun refresh(userId: String) {
+        isUserRefreshing = true
+        _uiState.update { it.copy(isRefreshing = true) }
+        viewModelScope.launch {
+            getAllGroupsUseCase.sync(userId)
+            isUserRefreshing = false
+            _uiState.update { it.copy(isRefreshing = false) }
         }
     }
 

@@ -8,6 +8,7 @@ import com.example.splitbuddy.domain.usecase.expense.GetAllExpenseByGroupIdUseCa
 import com.example.splitbuddy.domain.usecase.group.GetAllGroupsUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
 import com.example.splitbuddy.domain.usecase.settlement.GetGroupBalancesUseCase
+import com.example.splitbuddy.domain.usecase.settlement.GetGroupSettlementsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -19,15 +20,21 @@ class DashboardViewModel(
     private val getAllGroupsUseCase: GetAllGroupsUseCase,
     private val getGroupMembersUseCase: GetGroupMembersUseCase,
     private val getAllExpenseByGroupIdUseCase: GetAllExpenseByGroupIdUseCase,
-    private val getGroupBalancesUseCase: GetGroupBalancesUseCase
+    private val getGroupBalancesUseCase: GetGroupBalancesUseCase,
+    private val getGroupSettlementsUseCase: GetGroupSettlementsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState
 
-    fun load(userId: String) {
+    fun load(userId: String, isRefresh: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update {
+                it.copy(
+                    isLoading = !isRefresh,
+                    isRefreshing = isRefresh
+                )
+            }
 
             // STEP 1: Load user's first name from local DB
             // userQuery.getUser() is the same call ProfileEditViewModel uses
@@ -41,27 +48,27 @@ class DashboardViewModel(
 
             val allGroups = when (groupsResource) {
                 is Resource.Success -> groupsResource.data
-                is Resource.Error   -> groupsResource.data ?: emptyList()
-                else                -> emptyList()
+                is Resource.Error -> groupsResource.data ?: emptyList()
+                else -> emptyList()
             }
 
             // STEP 3: For each group, load members + expenses
             // This builds a pair: (DashboardGroup info, list of expenses)
             val groupData = allGroups.map { trip ->
-                val members  = getGroupMembersUseCase(trip.id)
-                val expenses = when (val expRes   = getAllExpenseByGroupIdUseCase.load(trip.id)) {
+                val members = getGroupMembersUseCase(trip.id)
+                val expenses = when (val expRes = getAllExpenseByGroupIdUseCase.load(trip.id)) {
                     is Resource.Success -> expRes.data
-                    is Resource.Error   -> expRes.data ?: emptyList()
-                    else                -> emptyList()
+                    is Resource.Error -> expRes.data ?: emptyList()
+                    else -> emptyList()
                 }
 
                 val group = DashboardGroup(
-                    id           = trip.id,
-                    groupName    = trip.tripTitle,
-                    totalMember  = members.size,
+                    id = trip.id,
+                    groupName = trip.tripTitle,
+                    totalMember = members.size,
                     totalExpense = expenses.size,
-                    totalAmount  = expenses.sumOf { it.amount },
-                    createdAt    = trip.createdAt
+                    totalAmount = expenses.sumOf { it.amount },
+                    createdAt = trip.createdAt
                 )
                 Pair(group, expenses)
             }
@@ -79,10 +86,10 @@ class DashboardViewModel(
                 .take(3)
                 .map { expense ->
                     DashboardExpense(
-                        title      = expense.title,
+                        title = expense.title,
                         paidByName = expense.paidByUserName,
-                        amount     = expense.amount,
-                        createdAt  = expense.createdAt
+                        amount = expense.amount,
+                        createdAt = expense.createdAt
                     )
                 }
 
@@ -91,12 +98,20 @@ class DashboardViewModel(
             val totalSpent = groupData.flatMap { it.second }.sumOf { it.amount }
 
             // Calculate youOwe + youAreOwed across all groups
-            var youOwe     = 0.0
+            var youOwe = 0.0
             var youAreOwed = 0.0
 
             for (group in allGroups) {
                 val suggestions = getGroupBalancesUseCase(group.id)
+
+                // USE CASE instead of direct query
+                val settlements = getGroupSettlementsUseCase(group.id)
+                val paidPairs   = settlements
+                    .map { "${it.fromUserId}|${it.toUserId}" }
+                    .toSet()
+
                 for (suggestion in suggestions) {
+                    if ("${suggestion.fromUserId}|${suggestion.toUserId}" in paidPairs) continue
                     when (userId) {
                         suggestion.fromUserId -> youOwe     += suggestion.amount
                         suggestion.toUserId   -> youAreOwed += suggestion.amount
@@ -106,12 +121,13 @@ class DashboardViewModel(
 
             _uiState.update {
                 it.copy(
-                    isLoading      = false,
-                    userName       = displayName,
-                    totalSpent     = totalSpent,
-                    youAreOwed     = youAreOwed,
-                    youOwe         = youOwe,
-                    recentGroups   = recentGroups,
+                    isLoading = false,
+                    isRefreshing = false,
+                    userName = displayName,
+                    totalSpent = totalSpent,
+                    youAreOwed = youAreOwed,
+                    youOwe = youOwe,
+                    recentGroups = recentGroups,
                     recentExpenses = recentExpenses
                 )
             }

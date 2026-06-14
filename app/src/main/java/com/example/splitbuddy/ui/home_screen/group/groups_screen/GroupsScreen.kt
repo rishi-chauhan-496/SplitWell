@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,13 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.splitbuddy.R
-import com.example.splitbuddy.ui.components.EmptyStateView
-import com.example.splitbuddy.ui.components.LoadingView
-import com.example.splitbuddy.ui.components.OfflineBanner
+import com.example.splitbuddy.ui.components.ScreenStateWrapper
 import com.example.splitbuddy.ui.home_screen.group.GroupListCard
 import com.example.splitbuddy.ui.theme.Primary
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupsScreen(
     userId: String,
@@ -37,22 +38,18 @@ fun GroupsScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            OfflineBanner(isOffline = state.value.isOffline)
-            when {
-                state.value.isLoading -> LoadingView()
-
-                state.value.error != null -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = stringResource(R.string.error_something_went_wrong, state.value.error ?: ""),
-                            color = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    }
-                }
-
-                state.value.groups.isEmpty() -> EmptyStateView(message = stringResource(R.string.groups_empty_message))
-
-                else -> {
+            PullToRefreshBox(
+                isRefreshing = state.value.isRefreshing,
+                onRefresh = { viewModel.refresh(userId) }
+            ) {
+                ScreenStateWrapper(
+                    isLoading = state.value.isLoading,
+                    error = state.value.error?.let {
+                        stringResource(R.string.error_something_went_wrong, it)
+                    },
+                    isEmpty = state.value.groups.isEmpty(),
+                    emptyMessage = stringResource(R.string.groups_empty_message)
+                ) {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp)
@@ -81,7 +78,10 @@ fun GroupsScreen(
             contentColor = Color.White,
             shape = RoundedCornerShape(16.dp)
         ) {
-            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.Group_Creation_Button))
+            Icon(
+                Icons.Default.Add,
+                contentDescription = stringResource(R.string.Group_Creation_Button)
+            )
         }
     }
 }

@@ -2,6 +2,7 @@ package com.example.splitbuddy.ui.home_screen.dashboard
 
 data class DashboardUiState(
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val userName: String = "",
 
     val totalSpent: Double = 0.0,

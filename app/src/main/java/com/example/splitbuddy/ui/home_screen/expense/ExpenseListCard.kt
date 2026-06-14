@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.splitbuddy.ui.components.SplitBuddyCard
 import com.example.splitbuddy.R
 import com.example.splitbuddy.ui.util.toTimeAgo
 import com.example.splitbuddy.ui.theme.Primary
@@ -28,22 +29,7 @@ fun ExpenseListCard(
     createdAt: String = "",
     onClick: () -> Unit = {}
 ) {
-    val isDark = isSystemInDarkTheme()
-
-    Surface(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp, 6.dp)
-            .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(16.dp),
-                ambientColor = if (isDark) Color.White.copy(0.05f) else Primary.copy(0.1f),
-                spotColor = if (isDark) Color.White.copy(0.05f) else Primary.copy(0.15f)
-            ),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp)
-    ) {
+    SplitBuddyCard(elevation = 8.dp, onClick = onClick) {
         Row(modifier = Modifier.fillMaxWidth()) {
 
             // Left accent bar

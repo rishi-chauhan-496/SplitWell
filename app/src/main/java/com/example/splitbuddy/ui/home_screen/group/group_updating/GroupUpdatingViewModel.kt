@@ -123,10 +123,10 @@ class GroupUpdatingViewModel(
                         it.copy(
                             isLoading       = false,
                             members         = updatedMembers,
-                            selectedToRemove = emptySet()   // clear selection
+                            selectedToRemove = emptySet(),   // clear selection
+                            isMembersRemoved = true
                         )
                     }
-                    SnackbarController.show("Members removed successfully")
                 }
                 is Resource.Error -> {
                     _uiState.update { it.copy(isLoading = false) }

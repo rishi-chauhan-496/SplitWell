@@ -6,4 +6,5 @@ interface UserApiInterface {
     suspend fun getAllUser(): List<UserResponse>
     suspend fun getUserById(userId: String): UserResponse
     suspend fun updateUser(userId: String, request: UpdateUserRequest): UserResponse
+    suspend fun getUserFriends(userId: String): List<FriendResponse>
 }

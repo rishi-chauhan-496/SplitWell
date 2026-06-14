@@ -132,6 +132,11 @@
     <string name="profile_email_note">Email is linked to your Google account and cannot be changed</string>
     <string name="profile_save_button">Save Profile</string>
     <string name="topbar_settlement">Settlement</string>
+    <string name="toast_group_created">Group created</string>
+    <string name="toast_members_added">Members added</string>
+    <string name="toast_members_removed">Members removed</string>
+    <string name="toast_profile_saved">Profile saved</string>
+    <string name="toast_settlement_recorded">Settlement recorded</string>
 
     <string name="default_web_client_id">203002226684-mhat13a36eomecekr6k84rcjjrfqmphf.apps.googleusercontent.com</string>
 

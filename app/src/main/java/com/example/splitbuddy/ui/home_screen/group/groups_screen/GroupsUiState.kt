@@ -2,8 +2,8 @@ package com.example.splitbuddy.ui.home_screen.group.groups_screen
 
 data class GroupsUiState(
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val groups: List<GroupSummary> = emptyList(),
-    val isOffline: Boolean = false,
     val error: String? = null
 )
 

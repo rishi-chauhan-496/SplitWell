@@ -1,12 +1,13 @@
 package com.example.splitbuddy.ui.home_screen.dashboard
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,86 +18,70 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.splitbuddy.R
-import com.example.splitbuddy.ui.components.LoadingView
+import com.example.splitbuddy.ui.components.ScreenStateWrapper
 import com.example.splitbuddy.ui.home_screen.expense.ExpenseListCard
 import com.example.splitbuddy.ui.home_screen.group.GroupListCard
 import com.example.splitbuddy.ui.theme.Primary
 import com.example.splitbuddy.ui.theme.gradient
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(userId: String) {
 
     val viewModel: DashboardViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsState()
 
-    // Load data once when the screen first opens
-    LaunchedEffect(Unit) {
-        viewModel.load(userId)
-    }
+    LaunchedEffect(Unit) { viewModel.load(userId) }
 
-    if (state.isLoading) {
-        LoadingView()
-        return
-    }
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 24.dp)
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { viewModel.load(userId, isRefresh = true) }
     ) {
+        ScreenStateWrapper(isLoading = state.isLoading) {
 
-        // ── Section 1: Greeting ──────────────────────────────────────────────
-        item {
-            GreetingHeader(userName = state.userName)
-        }
-
-        // ── Section 2: Summary Cards ─────────────────────────────────────────
-        item {
-            SummaryCardsRow(
-                totalSpent = state.totalSpent,
-                youAreOwed = state.youAreOwed,
-                youOwe     = state.youOwe
-            )
-        }
-
-        // ── Section 3: Recent Groups ──────────────────────────────────────────
-        item {
-            SectionHeader(title = stringResource(R.string.dashboard_recent_groups))
-        }
-
-        if (state.recentGroups.isEmpty()) {
-            item { EmptyHint(text = stringResource(R.string.dashboard_empty_groups)) }
-        } else {
-            items(state.recentGroups) { group ->
-                // Wrapped in a Box so horizontal padding matches the rest of the screen
-                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    GroupListCard(
-                        groupName    = group.groupName,
-                        totalMember  = group.totalMember,
-                        totalExpense = group.totalExpense,
-                        totalAmount  = group.totalAmount,
-                        createdAt    = group.createdAt,
-                        onClick      = {} // No navigation from Dashboard
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                item { GreetingHeader(userName = state.userName) }
+                item {
+                    SummaryCardsRow(
+                        totalSpent = state.totalSpent,
+                        youAreOwed = state.youAreOwed,
+                        youOwe = state.youOwe
                     )
                 }
-            }
-        }
-
-        // ── Section 4: Recent Expenses ────────────────────────────────────────
-        item {
-            SectionHeader(title = stringResource(R.string.dashboard_recent_expenses))
-        }
-
-        if (state.recentExpenses.isEmpty()) {
-            item { EmptyHint(text = stringResource(R.string.dashboard_empty_expenses)) }
-        } else {
-            items(state.recentExpenses) { expense ->
-                ExpenseListCard(
-                    title     = expense.title,
-                    by        = expense.paidByName,
-                    amount    = expense.amount,
-                    createdAt = expense.createdAt
-                )
+                item { SectionHeader(title = stringResource(R.string.dashboard_recent_groups)) }
+                if (state.recentGroups.isEmpty()) {
+                    item { EmptyHint(text = stringResource(R.string.dashboard_empty_groups)) }
+                } else {
+                    items(state.recentGroups) { group ->
+                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            GroupListCard(
+                                groupName = group.groupName,
+                                totalMember = group.totalMember,
+                                totalExpense = group.totalExpense,
+                                totalAmount = group.totalAmount,
+                                createdAt = group.createdAt,
+                                onClick = {}
+                            )
+                        }
+                    }
+                }
+                item { SectionHeader(title = stringResource(R.string.dashboard_recent_expenses)) }
+                if (state.recentExpenses.isEmpty()) {
+                    item { EmptyHint(text = stringResource(R.string.dashboard_empty_expenses)) }
+                } else {
+                    items(state.recentExpenses) { expense ->
+                        ExpenseListCard(
+                            title = expense.title,
+                            by = expense.paidByName,
+                            amount = expense.amount,
+                            createdAt = expense.createdAt
+                        )
+                    }
+                }
             }
         }
     }
@@ -117,9 +102,9 @@ private fun GreetingHeader(userName: String) {
         Column {
             Text(
                 text = stringResource(R.string.dashboard_greeting, userName),
-                style      = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color      = Color.White
+                color = Color.White
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -145,21 +130,21 @@ private fun SummaryCardsRow(
     ) {
         SummaryCard(
             label = stringResource(R.string.dashboard_total_spent),
-            amount      = totalSpent,
+            amount = totalSpent,
             amountColor = Primary,
-            modifier    = Modifier.weight(1f)
+            modifier = Modifier.weight(1f)
         )
         SummaryCard(
             label = stringResource(R.string.dashboard_owed_to_you),
-            amount      = youAreOwed,
+            amount = youAreOwed,
             amountColor = Color(0xFF2E7D32),
-            modifier    = Modifier.weight(1f)
+            modifier = Modifier.weight(1f)
         )
         SummaryCard(
             label = stringResource(R.string.dashboard_you_owe),
-            amount      = youOwe,
+            amount = youOwe,
             amountColor = Color(0xFFC62828),
-            modifier    = Modifier.weight(1f)
+            modifier = Modifier.weight(1f)
         )
     }
 }
@@ -172,26 +157,26 @@ private fun SummaryCard(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier        = modifier,
-        shape           = RoundedCornerShape(16.dp),
-        color           = MaterialTheme.colorScheme.surface,
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 4.dp
     ) {
         Column(
-            modifier            = Modifier.padding(10.dp),
+            modifier = Modifier.padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text     = label,
+                text = label,
                 fontSize = 11.sp,
-                color    = MaterialTheme.colorScheme.surfaceVariant
+                color = MaterialTheme.colorScheme.surfaceVariant
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = stringResource(R.string.dashboard_amount_format, "%.0f".format(amount)),
-                style      = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color      = amountColor
+                color = amountColor
             )
         }
     }
@@ -200,9 +185,9 @@ private fun SummaryCard(
 @Composable
 private fun SectionHeader(title: String) {
     Text(
-        text       = title,
-        modifier   = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 4.dp),
-        style      = MaterialTheme.typography.titleMedium,
+        text = title,
+        modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 4.dp),
+        style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold
     )
 }
@@ -219,7 +204,7 @@ private fun EmptyHint(text: String) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text  = text,
+            text = text,
             color = MaterialTheme.colorScheme.surfaceVariant,
             style = MaterialTheme.typography.bodyMedium
         )

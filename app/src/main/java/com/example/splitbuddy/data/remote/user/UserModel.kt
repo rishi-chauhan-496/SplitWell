@@ -35,3 +35,14 @@ data class UpdateUserRequest(
     val socialMediaId: String? = null,
     val isActive: Boolean? = null
 )
+
+// Friend API response — GET /users/:id/friends
+data class FriendResponse(
+    val id: String,
+    val username: String,
+    val firstName: String,
+    val lastName: String,
+    val email: String,
+    val contact: String,
+    val isActive: Boolean
+)

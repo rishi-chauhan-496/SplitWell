@@ -23,4 +23,8 @@ class UserApiInterfaceImpl: UserApiInterface {
     override suspend fun updateUser(userId: String, request: UpdateUserRequest): UserResponse {
         return api.updateUser(userId, request)
     }
+
+    override suspend fun getUserFriends(userId: String): List<FriendResponse> {
+        return api.getUserFriends(userId)
+    }
 }

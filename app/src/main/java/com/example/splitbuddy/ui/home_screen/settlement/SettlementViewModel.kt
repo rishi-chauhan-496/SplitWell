@@ -2,12 +2,16 @@ package com.example.splitbuddy.ui.home_screen.settlement
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.splitbuddy.data.local.query.SettlementQuery
 import com.example.splitbuddy.data.local.query.UserQuery
 import com.example.splitbuddy.data.remote.settlement.SettlementRequest
+import com.example.splitbuddy.data.util.toAppError
+import com.example.splitbuddy.data.util.toWriteMessage
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
 import com.example.splitbuddy.domain.usecase.settlement.CreateSettlementUseCase
+import com.example.splitbuddy.domain.usecase.settlement.DeleteSettlementUseCase
 import com.example.splitbuddy.domain.usecase.settlement.GetGroupBalancesUseCase
+import com.example.splitbuddy.domain.usecase.settlement.GetGroupSettlementsUseCase
+import com.example.splitbuddy.ui.util.SnackbarController
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,8 +21,9 @@ import kotlinx.coroutines.launch
 class SettlementViewModel(
     private val getGroupBalancesUseCase: GetGroupBalancesUseCase,
     private val createSettlementUseCase: CreateSettlementUseCase,
+    private val deleteSettlementUseCase: DeleteSettlementUseCase,
     private val getGroupMembersUseCase: GetGroupMembersUseCase,
-    private val settlementQuery: SettlementQuery,
+    private val getGroupSettlementsUseCase: GetGroupSettlementsUseCase,
     private val userQuery: UserQuery
 ) : ViewModel() {
 
@@ -27,60 +32,62 @@ class SettlementViewModel(
 
     private var currentGroupId = ""
 
-    fun load(groupId: String) {
+    fun load(groupId: String, isRefresh: Boolean = false) {
         currentGroupId = groupId
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-
+            _uiState.update {
+                it.copy(
+                    isLoading    = !isRefresh,
+                    isRefreshing = isRefresh,
+                    error        = null
+                )
+            }
             try {
-                // Run all three in parallel
                 val membersDeferred     = async { getGroupMembersUseCase(groupId) }
                 val suggestionsDeferred = async { getGroupBalancesUseCase(groupId) }
-                val settlementsDeferred = async { settlementQuery.getSettlementByTrip(groupId) }
+                val settlementsDeferred = async { getGroupSettlementsUseCase(groupId) }
 
                 val members     = membersDeferred.await()
                 val suggestions = suggestionsDeferred.await()
                 val settlements = settlementsDeferred.await()
 
-                // userId → display name from group members
                 val nameMap = members.associate { m ->
                     m.userId to m.userName.ifBlank { m.userId }
                 }
 
-                // Build a set of already-paid pairs for quick lookup
-                // Key = "fromUserId|toUserId"
-                val paidPairs = settlements
-                    .filter { !it.isDeleted }
-                    .map    { "${it.fromUserId}|${it.toUserId}" }
-                    .toSet()
+                val paidPairsMap = settlements
+                    .associate { "${it.fromUserId}|${it.toUserId}" to it.id }
 
-                // Map suggestions → SuggestionItem, mark isPaid from settlement table
                 val items = suggestions.map { s ->
                     val fromName = nameMap[s.fromUserId]
-                        ?: userQuery.getUser(s.fromUserId)?.userName
-                        ?: s.fromUserId
+                        ?: userQuery.getUser(s.fromUserId)?.userName ?: s.fromUserId
                     val toName = nameMap[s.toUserId]
-                        ?: userQuery.getUser(s.toUserId)?.userName
-                        ?: s.toUserId
+                        ?: userQuery.getUser(s.toUserId)?.userName ?: s.toUserId
+
+                    val pairKey      = "${s.fromUserId}|${s.toUserId}"
+                    val settlementId = paidPairsMap[pairKey]
 
                     SuggestionItem(
-                        fromUserId = s.fromUserId,
-                        fromName   = fromName,
-                        toUserId   = s.toUserId,
-                        toName     = toName,
-                        amount     = s.amount,
-                        isPaid     = "${s.fromUserId}|${s.toUserId}" in paidPairs
+                        fromUserId   = s.fromUserId,
+                        fromName     = fromName,
+                        toUserId     = s.toUserId,
+                        toName       = toName,
+                        amount       = s.amount,
+                        isPaid       = settlementId != null,
+                        settlementId = settlementId
                     )
                 }
 
                 _uiState.update {
-                    it.copy(isLoading = false, suggestions = items)
+                    it.copy(
+                        isLoading    = false,
+                        isRefreshing = false,
+                        suggestions  = items
+                    )
                 }
-
             } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(isLoading = false, error = e.message ?: "Failed to load")
-                }
+                _uiState.update { it.copy(isLoading = false, isRefreshing = false) }
+                SnackbarController.show(e.toAppError().toWriteMessage())
             }
         }
     }
@@ -126,13 +133,49 @@ class SettlementViewModel(
                         note       = dialog.note.ifBlank { null }
                     )
                 )
-                _uiState.update { it.copy(isSaving = false, confirmDialog = null) }
+                _uiState.update { it.copy(isSaving = false, confirmDialog = null, isSettlementRecorded = true) }
                 load(currentGroupId)
 
             } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(isSaving = false, error = e.message ?: "Failed to record settlement")
-                }
+                _uiState.update { it.copy(isSaving = false) }
+                SnackbarController.show(e.toAppError().toWriteMessage())
+            }
+        }
+    }
+
+    // User taps [Paid ✓] — open unsettle confirmation dialog
+    fun onUnsettleClick(item: SuggestionItem) {
+        val settlementId = item.settlementId ?: return
+        _uiState.update {
+            it.copy(
+                unsettleDialog = UnsettleDialogState(
+                    settlementId = settlementId,
+                    fromName     = item.fromName,
+                    toName       = item.toName,
+                    amount       = item.amount
+                )
+            )
+        }
+    }
+
+    fun onDismissUnsettleDialog() {
+        _uiState.update { it.copy(unsettleDialog = null) }
+    }
+
+    fun onConfirmUnsettle() {
+        val dialog = _uiState.value.unsettleDialog ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+
+            try {
+                deleteSettlementUseCase(dialog.settlementId)
+                _uiState.update { it.copy(isSaving = false, unsettleDialog = null) }
+                load(currentGroupId)    // reload — card goes back to [Mark Paid]
+
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isSaving = false) }
+                SnackbarController.show(e.toAppError().toWriteMessage())
             }
         }
     }

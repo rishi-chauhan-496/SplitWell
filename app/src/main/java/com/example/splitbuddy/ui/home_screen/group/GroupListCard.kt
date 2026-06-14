@@ -1,7 +1,6 @@
 package com.example.splitbuddy.ui.home_screen.group
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -9,13 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.splitbuddy.ui.components.SplitBuddyCard
 import com.example.splitbuddy.R
 import com.example.splitbuddy.ui.util.toTimeAgo
 import com.example.splitbuddy.ui.theme.Primary
@@ -29,22 +27,7 @@ fun GroupListCard(
     createdAt: String = "",
     onClick: () -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
-
-    Surface(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(0.dp, 6.dp)
-            .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(16.dp),
-                ambientColor = if (isDark) Color.White.copy(0.05f) else Primary.copy(0.1f),
-                spotColor = if (isDark) Color.White.copy(0.05f) else Primary.copy(0.15f)
-            ),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp)
-    ) {
+    SplitBuddyCard(elevation = 8.dp, onClick = onClick) {
         Row(modifier = Modifier.fillMaxWidth()) {
 
             // Left accent bar

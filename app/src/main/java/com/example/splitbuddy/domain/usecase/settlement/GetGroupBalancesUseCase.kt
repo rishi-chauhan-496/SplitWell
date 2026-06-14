@@ -3,6 +3,7 @@ package com.example.splitbuddy.domain.usecase.settlement
 import com.example.splitbuddy.data.local.query.ExpenseQuery
 import com.example.splitbuddy.data.local.query.ExpenseShareQuery
 import com.example.splitbuddy.domain.calculator.SettlementCalculator
+import com.example.splitbuddy.domain.model.SettlementSuggestion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -15,18 +16,17 @@ class GetGroupBalancesUseCase(
     suspend operator fun invoke(groupId: String): List<SettlementSuggestion> =
         withContext(Dispatchers.IO) {
 
-            // 1. Load all expenses for the group
+            // Query 1 — all expenses for the group
             val expenses = expenseQuery.getExpenseByTripId(groupId)
 
-            // 2. Load shares for every expense — grouped by expenseId
-            val sharesByExpense = expenses.associate { expense ->
-                expense.id to expenseShareQuery.getSharesByExpenseId(expense.id)
-            }
+            // Query 2 — ALL shares for the group in one shot (no loop!)
+            val allShares = expenseShareQuery.getSharesByGroupId(groupId)
 
-            // 3. Calculate net balances
+            // Group shares by expenseId in memory — zero DB calls
+            val sharesByExpense = allShares.groupBy { it.expenseId }
+
+            // Calculate + simplify
             val netBalances = calculator.calculateNetBalances(expenses, sharesByExpense)
-
-            // 4. Simplify into minimum transactions
             calculator.simplifyDebts(netBalances)
         }
 }
