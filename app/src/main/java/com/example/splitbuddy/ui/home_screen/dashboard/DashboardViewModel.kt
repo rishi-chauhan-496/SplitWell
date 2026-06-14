@@ -8,6 +8,7 @@ import com.example.splitbuddy.domain.usecase.expense.GetAllExpenseByGroupIdUseCa
 import com.example.splitbuddy.domain.usecase.group.GetAllGroupsUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
 import com.example.splitbuddy.domain.usecase.settlement.GetGroupBalancesUseCase
+import com.example.splitbuddy.domain.usecase.settlement.GetGroupSettlementsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -19,7 +20,8 @@ class DashboardViewModel(
     private val getAllGroupsUseCase: GetAllGroupsUseCase,
     private val getGroupMembersUseCase: GetGroupMembersUseCase,
     private val getAllExpenseByGroupIdUseCase: GetAllExpenseByGroupIdUseCase,
-    private val getGroupBalancesUseCase: GetGroupBalancesUseCase
+    private val getGroupBalancesUseCase: GetGroupBalancesUseCase,
+    private val getGroupSettlementsUseCase: GetGroupSettlementsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -101,10 +103,18 @@ class DashboardViewModel(
 
             for (group in allGroups) {
                 val suggestions = getGroupBalancesUseCase(group.id)
+
+                // USE CASE instead of direct query
+                val settlements = getGroupSettlementsUseCase(group.id)
+                val paidPairs   = settlements
+                    .map { "${it.fromUserId}|${it.toUserId}" }
+                    .toSet()
+
                 for (suggestion in suggestions) {
+                    if ("${suggestion.fromUserId}|${suggestion.toUserId}" in paidPairs) continue
                     when (userId) {
-                        suggestion.fromUserId -> youOwe += suggestion.amount
-                        suggestion.toUserId -> youAreOwed += suggestion.amount
+                        suggestion.fromUserId -> youOwe     += suggestion.amount
+                        suggestion.toUserId   -> youAreOwed += suggestion.amount
                     }
                 }
             }

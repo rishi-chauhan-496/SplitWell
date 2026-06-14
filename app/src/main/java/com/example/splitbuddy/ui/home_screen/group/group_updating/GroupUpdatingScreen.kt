@@ -40,6 +40,7 @@ fun GroupUpdatingScreen(
     val context = LocalContext.current
     val msgUpdated = stringResource(R.string.group_toast_updated)
     val msgDeleted = stringResource(R.string.group_toast_deleted)
+    val toastMsg = stringResource(R.string.toast_members_removed)
 
     LaunchedEffect(groupId) {
         viewModel.load(groupId)
@@ -60,7 +61,7 @@ fun GroupUpdatingScreen(
     }
     LaunchedEffect(state.value.isMembersRemoved) {
         if (state.value.isMembersRemoved) {
-            Toast.makeText(context, "Members removed", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()
         }
     }
 

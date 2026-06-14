@@ -38,17 +38,17 @@ fun GroupsScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            ScreenStateWrapper(
-                isLoading = state.value.isLoading,
-                error = state.value.error?.let {
-                    stringResource(R.string.error_something_went_wrong, it)
-                },
-                isEmpty = state.value.groups.isEmpty(),
-                emptyMessage = stringResource(R.string.groups_empty_message)
+            PullToRefreshBox(
+                isRefreshing = state.value.isRefreshing,
+                onRefresh = { viewModel.refresh(userId) }
             ) {
-                PullToRefreshBox(
-                    isRefreshing = state.value.isRefreshing,
-                    onRefresh = { viewModel.refresh(userId) }
+                ScreenStateWrapper(
+                    isLoading = state.value.isLoading,
+                    error = state.value.error?.let {
+                        stringResource(R.string.error_something_went_wrong, it)
+                    },
+                    isEmpty = state.value.groups.isEmpty(),
+                    emptyMessage = stringResource(R.string.groups_empty_message)
                 ) {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),

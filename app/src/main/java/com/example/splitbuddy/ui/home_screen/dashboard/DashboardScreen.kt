@@ -34,13 +34,14 @@ fun DashboardScreen(userId: String) {
 
     LaunchedEffect(Unit) { viewModel.load(userId) }
 
-    ScreenStateWrapper(isLoading = state.isLoading) {
-        PullToRefreshBox(
-            isRefreshing = state.isRefreshing,
-            onRefresh    = { viewModel.load(userId, isRefresh = true) }
-        ) {
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { viewModel.load(userId, isRefresh = true) }
+    ) {
+        ScreenStateWrapper(isLoading = state.isLoading) {
+
             LazyColumn(
-                modifier       = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 24.dp)
             ) {
                 item { GreetingHeader(userName = state.userName) }
@@ -48,7 +49,7 @@ fun DashboardScreen(userId: String) {
                     SummaryCardsRow(
                         totalSpent = state.totalSpent,
                         youAreOwed = state.youAreOwed,
-                        youOwe     = state.youOwe
+                        youOwe = state.youOwe
                     )
                 }
                 item { SectionHeader(title = stringResource(R.string.dashboard_recent_groups)) }
@@ -58,12 +59,12 @@ fun DashboardScreen(userId: String) {
                     items(state.recentGroups) { group ->
                         Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                             GroupListCard(
-                                groupName    = group.groupName,
-                                totalMember  = group.totalMember,
+                                groupName = group.groupName,
+                                totalMember = group.totalMember,
                                 totalExpense = group.totalExpense,
-                                totalAmount  = group.totalAmount,
-                                createdAt    = group.createdAt,
-                                onClick      = {}
+                                totalAmount = group.totalAmount,
+                                createdAt = group.createdAt,
+                                onClick = {}
                             )
                         }
                     }
@@ -74,9 +75,9 @@ fun DashboardScreen(userId: String) {
                 } else {
                     items(state.recentExpenses) { expense ->
                         ExpenseListCard(
-                            title     = expense.title,
-                            by        = expense.paidByName,
-                            amount    = expense.amount,
+                            title = expense.title,
+                            by = expense.paidByName,
+                            amount = expense.amount,
                             createdAt = expense.createdAt
                         )
                     }
@@ -101,9 +102,9 @@ private fun GreetingHeader(userName: String) {
         Column {
             Text(
                 text = stringResource(R.string.dashboard_greeting, userName),
-                style      = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color      = Color.White
+                color = Color.White
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -129,21 +130,21 @@ private fun SummaryCardsRow(
     ) {
         SummaryCard(
             label = stringResource(R.string.dashboard_total_spent),
-            amount      = totalSpent,
+            amount = totalSpent,
             amountColor = Primary,
-            modifier    = Modifier.weight(1f)
+            modifier = Modifier.weight(1f)
         )
         SummaryCard(
             label = stringResource(R.string.dashboard_owed_to_you),
-            amount      = youAreOwed,
+            amount = youAreOwed,
             amountColor = Color(0xFF2E7D32),
-            modifier    = Modifier.weight(1f)
+            modifier = Modifier.weight(1f)
         )
         SummaryCard(
             label = stringResource(R.string.dashboard_you_owe),
-            amount      = youOwe,
+            amount = youOwe,
             amountColor = Color(0xFFC62828),
-            modifier    = Modifier.weight(1f)
+            modifier = Modifier.weight(1f)
         )
     }
 }
@@ -156,26 +157,26 @@ private fun SummaryCard(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier        = modifier,
-        shape           = RoundedCornerShape(16.dp),
-        color           = MaterialTheme.colorScheme.surface,
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 4.dp
     ) {
         Column(
-            modifier            = Modifier.padding(10.dp),
+            modifier = Modifier.padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text     = label,
+                text = label,
                 fontSize = 11.sp,
-                color    = MaterialTheme.colorScheme.surfaceVariant
+                color = MaterialTheme.colorScheme.surfaceVariant
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = stringResource(R.string.dashboard_amount_format, "%.0f".format(amount)),
-                style      = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color      = amountColor
+                color = amountColor
             )
         }
     }
@@ -184,9 +185,9 @@ private fun SummaryCard(
 @Composable
 private fun SectionHeader(title: String) {
     Text(
-        text       = title,
-        modifier   = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 4.dp),
-        style      = MaterialTheme.typography.titleMedium,
+        text = title,
+        modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 4.dp),
+        style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold
     )
 }
@@ -203,7 +204,7 @@ private fun EmptyHint(text: String) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text  = text,
+            text = text,
             color = MaterialTheme.colorScheme.surfaceVariant,
             style = MaterialTheme.typography.bodyMedium
         )

@@ -2,12 +2,10 @@ package com.example.splitbuddy.ui.home_screen.group.group_screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.splitbuddy.data.util.AppError
 import com.example.splitbuddy.data.util.Resource
 import com.example.splitbuddy.domain.usecase.expense.GetAllExpenseByGroupIdUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupUseCase
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -37,16 +35,14 @@ class GroupDetailViewModel(
                 val group   = getGroupUseCase(groupId)
                 val members = getGroupMembersUseCase(groupId)
 
-                _uiState.update {
+                _uiState.update { it ->
                     it.copy(
                         isLoading   = false,
                         isRefreshing = false,
                         groupName   = group?.tripTitle ?: "",
                         memberCount = members.size,
                         expenses    = expenses,
-                        totalAmount = expenses.sumOf { it.amount },
-                        isOffline   = resource is Resource.Error &&
-                                (resource as Resource.Error).error is AppError.NetworkError
+                        totalAmount = expenses.sumOf { it.amount }
                     )
                 }
             }
@@ -61,7 +57,8 @@ class GroupDetailViewModel(
     fun refresh(groupId: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isRefreshing = true) }
-            getAllExpenseByGroupIdUseCase.load(groupId)  // re-triggers network, flow gets new data
+            getAllExpenseByGroupIdUseCase.load(groupId)
+            _uiState.update { it.copy(isRefreshing = false) }
         }
     }
 }

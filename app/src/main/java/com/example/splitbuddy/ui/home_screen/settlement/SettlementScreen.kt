@@ -13,11 +13,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.splitbuddy.R
 import com.example.splitbuddy.ui.components.InitialsAvatar
 import com.example.splitbuddy.ui.components.ScreenStateWrapper
 import com.example.splitbuddy.ui.components.SplitBuddyCard
@@ -31,45 +33,55 @@ fun SettlementScreen(groupId: String) {
     val viewModel: SettlementViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val toastMsg = stringResource(R.string.toast_settlement_recorded)
 
     LaunchedEffect(Unit) { viewModel.load(groupId) }
 
     LaunchedEffect(state.isSettlementRecorded) {
         if (state.isSettlementRecorded) {
-            Toast.makeText(context, "Settlement recorded", Toast.LENGTH_SHORT).show()
-        }
+            Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()        }
     }
 
     state.confirmDialog?.let { dialog ->
         ConfirmSettlementDialog(
-            dialog       = dialog,
-            isSaving     = state.isSaving,
+            dialog = dialog,
+            isSaving = state.isSaving,
             onNoteChange = viewModel::onNoteChange,
-            onDismiss    = viewModel::onDismissDialog,
-            onConfirm    = viewModel::onConfirmSettlement
+            onDismiss = viewModel::onDismissDialog,
+            onConfirm = viewModel::onConfirmSettlement
         )
     }
 
-    ScreenStateWrapper(
-        isLoading    = state.isLoading,
-        isEmpty      = state.suggestions.isEmpty(),
-        emptyMessage = "All settled! 🎉\nNo pending payments in this group"
+    state.unsettleDialog?.let { dialog ->
+        UnsettleDialog(
+            dialog    = dialog,
+            isSaving  = state.isSaving,
+            onDismiss = viewModel::onDismissUnsettleDialog,
+            onConfirm = viewModel::onConfirmUnsettle
+        )
+    }
+
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { viewModel.load(groupId, isRefresh = true) }
     ) {
-        PullToRefreshBox(
-            isRefreshing = state.isRefreshing,
-            onRefresh    = { viewModel.load(groupId, isRefresh = true) }
+        ScreenStateWrapper(
+            isLoading = state.isLoading,
+            isEmpty = state.suggestions.isEmpty(),
+            emptyMessage = "All settled! 🎉\nNo pending payments in this group"
         ) {
             LazyColumn(
-                modifier       = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     horizontal = 16.dp,
-                    vertical   = 12.dp
+                    vertical = 12.dp
                 )
             ) {
                 items(state.suggestions) { item ->
                     SuggestionCard(
                         item       = item,
-                        onMarkPaid = { if (!item.isPaid) viewModel.onMarkPaidClick(item) }
+                        onMarkPaid = { viewModel.onMarkPaidClick(item) },
+                        onUnsettle = { viewModel.onUnsettleClick(item) }
                     )
                 }
             }
@@ -80,7 +92,8 @@ fun SettlementScreen(groupId: String) {
 @Composable
 private fun SuggestionCard(
     item: SuggestionItem,
-    onMarkPaid: () -> Unit
+    onMarkPaid: () -> Unit,
+    onUnsettle: () -> Unit
 ) {
     val nameColor = if (item.isPaid)
         MaterialTheme.colorScheme.surfaceVariant
@@ -93,7 +106,7 @@ private fun SuggestionCard(
         Primary
 
     SplitBuddyCard(
-        dimmed    = item.isPaid,
+        dimmed = item.isPaid,
         elevation = if (item.isPaid) 2.dp else 6.dp
     ) {
         Column(
@@ -176,8 +189,8 @@ private fun SuggestionCard(
 
             // ── Row 3: Button ─────────────────────────────────────────────
             Button(
-                onClick = onMarkPaid,
-                enabled = !item.isPaid,
+                onClick  = if (item.isPaid) onUnsettle else onMarkPaid,
+                enabled  = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -250,6 +263,70 @@ private fun ConfirmSettlementDialog(
                     )
                 } else {
                     Text("Confirm")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !isSaving) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+@Composable
+private fun UnsettleDialog(
+    dialog: UnsettleDialogState,
+    isSaving: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { if (!isSaving) onDismiss() },
+        shape = RoundedCornerShape(20.dp),
+        title = {
+            Text(
+                text       = "Unsettle Payment",
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text  = "Remove settlement between ${dialog.fromName} and ${dialog.toName}?",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text       = "₹${"%.2f".format(dialog.amount)}",
+                    style      = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color      = Primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text     = "This will mark the payment as pending again.",
+                    fontSize = 12.sp,
+                    color    = MaterialTheme.colorScheme.surfaceVariant
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                enabled = !isSaving,
+                shape   = RoundedCornerShape(10.dp),
+                colors  = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFC62828)   // red — destructive action
+                )
+            ) {
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier    = Modifier.size(18.dp),
+                        color       = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Unsettle", color = Color.White)
                 }
             }
         },

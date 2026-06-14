@@ -2,7 +2,7 @@ package com.example.splitbuddy.domain.calculator
 
 import com.example.splitbuddy.data.local.model.Expense
 import com.example.splitbuddy.data.local.model.ExpenseShare
-import com.example.splitbuddy.domain.usecase.settlement.SettlementSuggestion
+import com.example.splitbuddy.domain.model.SettlementSuggestion
 
 class SettlementCalculator {
 
@@ -73,8 +73,8 @@ class SettlementCalculator {
             result.add(
                 SettlementSuggestion(
                     fromUserId = debtors[d].first,
-                    toUserId   = creditors[c].first,
-                    amount     = amount
+                    toUserId = creditors[c].first,
+                    amount = amount
                 )
             )
 

@@ -4,7 +4,6 @@ data class GroupsUiState(
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val groups: List<GroupSummary> = emptyList(),
-    val isOffline: Boolean = false,
     val error: String? = null
 )
 

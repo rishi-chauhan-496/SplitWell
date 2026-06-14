@@ -29,17 +29,17 @@ fun FriendListScreen(ownerID: String) {
 
     LaunchedEffect(Unit) { viewModel.load(ownerID) }
 
-    ScreenStateWrapper(
-        isLoading    = state.isLoading,
-        isEmpty      = state.friends.isEmpty(),
-        emptyMessage = stringResource(R.string.friends_empty_message)
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { viewModel.load(ownerID, isRefresh = true) }
     ) {
-        PullToRefreshBox(
-            isRefreshing = state.isRefreshing,
-            onRefresh    = { viewModel.load(ownerID, isRefresh = true) }
+        ScreenStateWrapper(
+            isLoading = state.isLoading,
+            isEmpty = state.friends.isEmpty(),
+            emptyMessage = stringResource(R.string.friends_empty_message)
         ) {
             LazyColumn(
-                modifier       = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
             ) {
                 items(state.friends) { friend ->
@@ -49,6 +49,7 @@ fun FriendListScreen(ownerID: String) {
         }
     }
 }
+
 @Composable
 private fun FriendCard(friend: FriendItem) {
     SplitBuddyCard(elevation = 8.dp) {

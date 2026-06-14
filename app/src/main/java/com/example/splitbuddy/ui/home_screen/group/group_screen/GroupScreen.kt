@@ -98,10 +98,10 @@ fun GroupScreen(
             PullToRefreshBox(
                 isRefreshing = state.value.isRefreshing,
                 onRefresh    = { viewModel.refresh(groupId) },
-                modifier     = Modifier.weight(1f)  // keep the existing weight here
+                modifier     = Modifier.weight(1f)
             ) {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize()  // remove weight from here, moved to PullToRefreshBox
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     items(state.value.expenses) { expense ->
                         ExpenseListCard(

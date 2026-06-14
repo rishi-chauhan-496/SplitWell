@@ -28,11 +28,11 @@ fun GroupCreationScreen(
     val viewModel: GroupCreationViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
-
+    val toastMsg = stringResource(R.string.toast_group_created)
 
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
-            Toast.makeText(context, "Group created", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()
             onGroupCreated()
             viewModel.resetSuccess()
         }

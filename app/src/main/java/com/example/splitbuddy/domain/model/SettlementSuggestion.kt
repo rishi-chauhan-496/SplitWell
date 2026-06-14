@@ -1,4 +1,4 @@
-package com.example.splitbuddy.domain.usecase.settlement
+package com.example.splitbuddy.domain.model
 
 data class SettlementSuggestion(
     val fromUserId: String,   // person who pays

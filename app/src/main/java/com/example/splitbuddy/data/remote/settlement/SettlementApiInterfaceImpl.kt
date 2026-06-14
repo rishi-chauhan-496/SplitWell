@@ -9,4 +9,8 @@ class SettlementApiInterfaceImpl : SettlementApiInterface {
     override suspend fun createSettlement(request: SettlementRequest): SettlementResponse {
         return api.createSettlement(request)
     }
+
+    override suspend fun deleteSettlement(settlementId: String) {
+        api.deleteSettlement(settlementId)
+    }
 }

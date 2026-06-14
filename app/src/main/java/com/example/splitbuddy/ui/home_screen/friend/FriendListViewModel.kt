@@ -22,12 +22,20 @@ class FriendListViewModel(
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
-                    isLoading    = !isRefresh,   // full screen loader only on first load
-                    isRefreshing = isRefresh     // small indicator on pull to refresh
+                    isLoading    = !isRefresh,
+                    isRefreshing = isRefresh
                 )
             }
             try {
                 val friends = getUserFriendsUseCase(ownerID)
+                    .map { friend ->
+                        FriendItem(               // mapping domain → UI happens here
+                            id          = friend.id,
+                            userName    = friend.userName,
+                            email       = friend.email,
+                            displayName = friend.displayName
+                        )
+                    }
                 _uiState.update {
                     it.copy(
                         isLoading    = false,

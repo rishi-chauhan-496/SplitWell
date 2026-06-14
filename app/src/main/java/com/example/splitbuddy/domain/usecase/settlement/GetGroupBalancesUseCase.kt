@@ -3,6 +3,7 @@ package com.example.splitbuddy.domain.usecase.settlement
 import com.example.splitbuddy.data.local.query.ExpenseQuery
 import com.example.splitbuddy.data.local.query.ExpenseShareQuery
 import com.example.splitbuddy.domain.calculator.SettlementCalculator
+import com.example.splitbuddy.domain.model.SettlementSuggestion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

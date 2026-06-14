@@ -35,11 +35,12 @@ fun AddMemberScreen(
     val viewModel: AddMemberViewModel = koinViewModel()
     val state = viewModel.state.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    val toastMsg = stringResource(R.string.toast_members_added)
 
     LaunchedEffect(groupId) { viewModel.load(groupId) }
     LaunchedEffect(state.value.isSaved) {
         if (state.value.isSaved) {
-            Toast.makeText(context, "Members added", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()
             onBack()
         }
     }

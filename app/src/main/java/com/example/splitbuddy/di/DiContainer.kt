@@ -38,7 +38,9 @@ import com.example.splitbuddy.domain.usecase.group.UpdateGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.AddMultipleMemberToGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.RemoveMembersFromGroupUseCase
 import com.example.splitbuddy.domain.usecase.settlement.CreateSettlementUseCase
+import com.example.splitbuddy.domain.usecase.settlement.DeleteSettlementUseCase
 import com.example.splitbuddy.domain.usecase.settlement.GetGroupBalancesUseCase
+import com.example.splitbuddy.domain.usecase.settlement.GetGroupSettlementsUseCase
 import com.example.splitbuddy.domain.usecase.user.GetAllUserUseCase
 import com.example.splitbuddy.domain.usecase.user.GetOrCreateUserUseCase
 import com.example.splitbuddy.domain.usecase.user.GetUserFriendsUseCase
@@ -129,19 +131,19 @@ object DIContainer {
         single<GroupRepository> {
             GroupRepositoryImpl(
                 groupApiInterface = get(),
-                tripsQuery        = get(),
-                tripManagerQuery  = get(),
-                userQuery         = get(),
-                userApiInterface  = get()
+                tripsQuery = get(),
+                tripManagerQuery = get(),
+                userQuery = get(),
+                userApiInterface = get()
             )
         }
         single<ExpenseRepository> {
             ExpenseRepositoryImpl(
                 expenseApiInterface = get(),
-                expenseQuery        = get(),
-                expenseShareQuery   = get(),
-                userQuery           = get(),
-                userApiInterface    = get()
+                expenseQuery = get(),
+                expenseShareQuery = get(),
+                userQuery = get(),
+                userApiInterface = get()
             )
         }
 
@@ -213,22 +215,34 @@ object DIContainer {
         single<CreateSettlementUseCase> {
             CreateSettlementUseCase(
                 settlementApiInterface = get(),
-                settlementQuery        = get()
+                settlementQuery = get()
             )
         }
         single<GetGroupBalancesUseCase> {
             GetGroupBalancesUseCase(
-                expenseQuery      = get(),
+                expenseQuery = get(),
                 expenseShareQuery = get(),
-                calculator        = get()
+                calculator = get()
             )
         }
         single<GetUserFriendsUseCase> {
             GetUserFriendsUseCase(userApiInterface = get())
         }
+        single<GetGroupSettlementsUseCase> {
+            GetGroupSettlementsUseCase(settlementQuery = get())
+        }
+        single<DeleteSettlementUseCase> {
+            DeleteSettlementUseCase(
+                settlementApiInterface = get(),
+                settlementQuery        = get()
+            )
+        }
 
         single<android.content.SharedPreferences> {
-            androidContext().getSharedPreferences("SplitBuddyPrefs", android.content.Context.MODE_PRIVATE)
+            androidContext().getSharedPreferences(
+                "SplitBuddyPrefs",
+                android.content.Context.MODE_PRIVATE
+            )
         }
         single { SettlementCalculator() }
 
@@ -247,10 +261,10 @@ object DIContainer {
         }
         viewModel<GroupUpdatingViewModel> {
             GroupUpdatingViewModel(
-                getGroupUseCase              = get(),
-                getGroupMembersUseCase       = get(),
-                updateGroupUseCase           = get(),
-                deleteGroupUseCase           = get(),
+                getGroupUseCase = get(),
+                getGroupMembersUseCase = get(),
+                updateGroupUseCase = get(),
+                deleteGroupUseCase = get(),
                 removeMembersFromGroupUseCase = get()
             )
         }
@@ -283,43 +297,45 @@ object DIContainer {
         }
         viewModel<ExpenseUpdateViewModel> {
             ExpenseUpdateViewModel(
-                expenseQuery           = get(),
-                expenseShareQuery      = get(),
+                expenseQuery = get(),
+                expenseShareQuery = get(),
                 getGroupMembersUseCase = get(),
-                updateExpenseUseCase   = get()
+                updateExpenseUseCase = get()
             )
         }
         viewModel<LoginViewModel> {
             LoginViewModel(
                 getOrCreateUserUseCase = get(),
-                sharedPreferences      = get()
+                sharedPreferences = get()
             )
         }
         viewModel<ProfileEditViewModel> {
             ProfileEditViewModel(
-                userQuery         = get(),
+                userQuery = get(),
                 updateUserUseCase = get()
             )
         }
         viewModel<DashboardViewModel> {
             DashboardViewModel(
-                userQuery                    = get(),
-                getAllGroupsUseCase           = get(),
-                getGroupMembersUseCase       = get(),
+                userQuery = get(),
+                getAllGroupsUseCase = get(),
+                getGroupMembersUseCase = get(),
                 getAllExpenseByGroupIdUseCase = get(),
-                getGroupBalancesUseCase      = get()
+                getGroupBalancesUseCase = get(),
+                getGroupSettlementsUseCase = get()
             )
         }
-        single<GetUserFriendsUseCase> {
-            GetUserFriendsUseCase(userApiInterface = get())
+        viewModel<FriendListViewModel> {
+            FriendListViewModel(getUserFriendsUseCase = get())
         }
         viewModel<SettlementViewModel> {
             SettlementViewModel(
                 getGroupBalancesUseCase = get(),
                 createSettlementUseCase = get(),
-                getGroupMembersUseCase  = get(),
-                settlementQuery         = get(),
-                userQuery               = get()
+                deleteSettlementUseCase = get(),
+                getGroupMembersUseCase = get(),
+                getGroupSettlementsUseCase = get(),
+                userQuery = get()
             )
         }
 
@@ -329,7 +345,7 @@ object DIContainer {
 
         single<SyncManager> {
             SyncManager(
-                groupRepository   = get(),
+                groupRepository = get(),
                 expenseRepository = get(),
                 sharedPreferences = get()
             )

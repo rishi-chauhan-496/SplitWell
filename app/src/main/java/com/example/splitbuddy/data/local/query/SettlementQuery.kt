@@ -144,4 +144,14 @@ class SettlementQuery(private val dbHelper: Database) {
         cursor.close()
         return list
     }
+
+    // Hard delete — fully removes the row from SQLite
+    fun deleteSettlement(settlementId: String): Boolean {
+        val db = dbHelper.writableDatabase
+        return db.delete(
+            SettlementTable.TABLE_NAME,
+            "${SettlementTable.ID} = ?",
+            arrayOf(settlementId)
+        ) > 0
+    }
 }

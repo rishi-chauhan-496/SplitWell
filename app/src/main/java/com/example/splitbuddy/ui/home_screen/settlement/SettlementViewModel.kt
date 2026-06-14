@@ -2,14 +2,15 @@ package com.example.splitbuddy.ui.home_screen.settlement
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.splitbuddy.data.local.query.SettlementQuery
 import com.example.splitbuddy.data.local.query.UserQuery
 import com.example.splitbuddy.data.remote.settlement.SettlementRequest
 import com.example.splitbuddy.data.util.toAppError
 import com.example.splitbuddy.data.util.toWriteMessage
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
 import com.example.splitbuddy.domain.usecase.settlement.CreateSettlementUseCase
+import com.example.splitbuddy.domain.usecase.settlement.DeleteSettlementUseCase
 import com.example.splitbuddy.domain.usecase.settlement.GetGroupBalancesUseCase
+import com.example.splitbuddy.domain.usecase.settlement.GetGroupSettlementsUseCase
 import com.example.splitbuddy.ui.util.SnackbarController
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,8 +21,9 @@ import kotlinx.coroutines.launch
 class SettlementViewModel(
     private val getGroupBalancesUseCase: GetGroupBalancesUseCase,
     private val createSettlementUseCase: CreateSettlementUseCase,
+    private val deleteSettlementUseCase: DeleteSettlementUseCase,
     private val getGroupMembersUseCase: GetGroupMembersUseCase,
-    private val settlementQuery: SettlementQuery,
+    private val getGroupSettlementsUseCase: GetGroupSettlementsUseCase,
     private val userQuery: UserQuery
 ) : ViewModel() {
 
@@ -43,7 +45,7 @@ class SettlementViewModel(
             try {
                 val membersDeferred     = async { getGroupMembersUseCase(groupId) }
                 val suggestionsDeferred = async { getGroupBalancesUseCase(groupId) }
-                val settlementsDeferred = async { settlementQuery.getSettlementByTrip(groupId) }
+                val settlementsDeferred = async { getGroupSettlementsUseCase(groupId) }
 
                 val members     = membersDeferred.await()
                 val suggestions = suggestionsDeferred.await()
@@ -53,10 +55,8 @@ class SettlementViewModel(
                     m.userId to m.userName.ifBlank { m.userId }
                 }
 
-                val paidPairs = settlements
-                    .filter { !it.isDeleted }
-                    .map    { "${it.fromUserId}|${it.toUserId}" }
-                    .toSet()
+                val paidPairsMap = settlements
+                    .associate { "${it.fromUserId}|${it.toUserId}" to it.id }
 
                 val items = suggestions.map { s ->
                     val fromName = nameMap[s.fromUserId]
@@ -64,13 +64,17 @@ class SettlementViewModel(
                     val toName = nameMap[s.toUserId]
                         ?: userQuery.getUser(s.toUserId)?.userName ?: s.toUserId
 
+                    val pairKey      = "${s.fromUserId}|${s.toUserId}"
+                    val settlementId = paidPairsMap[pairKey]
+
                     SuggestionItem(
-                        fromUserId = s.fromUserId,
-                        fromName   = fromName,
-                        toUserId   = s.toUserId,
-                        toName     = toName,
-                        amount     = s.amount,
-                        isPaid     = "${s.fromUserId}|${s.toUserId}" in paidPairs
+                        fromUserId   = s.fromUserId,
+                        fromName     = fromName,
+                        toUserId     = s.toUserId,
+                        toName       = toName,
+                        amount       = s.amount,
+                        isPaid       = settlementId != null,
+                        settlementId = settlementId
                     )
                 }
 
@@ -131,6 +135,43 @@ class SettlementViewModel(
                 )
                 _uiState.update { it.copy(isSaving = false, confirmDialog = null, isSettlementRecorded = true) }
                 load(currentGroupId)
+
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isSaving = false) }
+                SnackbarController.show(e.toAppError().toWriteMessage())
+            }
+        }
+    }
+
+    // User taps [Paid ✓] — open unsettle confirmation dialog
+    fun onUnsettleClick(item: SuggestionItem) {
+        val settlementId = item.settlementId ?: return
+        _uiState.update {
+            it.copy(
+                unsettleDialog = UnsettleDialogState(
+                    settlementId = settlementId,
+                    fromName     = item.fromName,
+                    toName       = item.toName,
+                    amount       = item.amount
+                )
+            )
+        }
+    }
+
+    fun onDismissUnsettleDialog() {
+        _uiState.update { it.copy(unsettleDialog = null) }
+    }
+
+    fun onConfirmUnsettle() {
+        val dialog = _uiState.value.unsettleDialog ?: return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+
+            try {
+                deleteSettlementUseCase(dialog.settlementId)
+                _uiState.update { it.copy(isSaving = false, unsettleDialog = null) }
+                load(currentGroupId)    // reload — card goes back to [Mark Paid]
 
             } catch (e: Exception) {
                 _uiState.update { it.copy(isSaving = false) }

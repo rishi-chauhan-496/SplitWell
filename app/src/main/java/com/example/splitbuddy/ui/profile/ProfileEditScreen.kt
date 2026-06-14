@@ -31,6 +31,7 @@ fun ProfileEditScreen(
     val viewModel: ProfileEditViewModel = koinViewModel()
     val state = viewModel.state.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    val toastMsg = stringResource(R.string.toast_profile_saved)
 
     LaunchedEffect(userId) {
         viewModel.load(userId)
@@ -38,7 +39,7 @@ fun ProfileEditScreen(
 
     LaunchedEffect(state.value.isSaved) {
         if (state.value.isSaved) {
-            Toast.makeText(context, "Profile saved", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()
             onSaved()
         }
     }

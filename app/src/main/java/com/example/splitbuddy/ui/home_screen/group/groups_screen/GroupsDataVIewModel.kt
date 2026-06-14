@@ -38,7 +38,6 @@ class GroupsDataViewModel(
                                 isLoading = false,
                                 isRefreshing = false,
                                 groups    = summaries,
-                                isOffline = false,
                                 error     = null
                             )
                         }
@@ -51,7 +50,6 @@ class GroupsDataViewModel(
                                 isLoading = false,
                                 isRefreshing = false,
                                 groups    = summaries,
-                                isOffline = resource.error is AppError.NetworkError,
                                 error     = if (resource.error is AppError.NetworkError) null
                                 else resource.error.toMessage()
                             )
@@ -77,6 +75,8 @@ class GroupsDataViewModel(
         _uiState.update { it.copy(isRefreshing = true) }
         viewModelScope.launch {
             getAllGroupsUseCase.sync(userId)
+            isUserRefreshing = false
+            _uiState.update { it.copy(isRefreshing = false) }
         }
     }
 
