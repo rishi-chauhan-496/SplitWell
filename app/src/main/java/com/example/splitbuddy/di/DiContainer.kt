@@ -13,6 +13,8 @@ import com.example.splitbuddy.data.local.query.TripsQuery
 import com.example.splitbuddy.data.local.query.UserQuery
 import com.example.splitbuddy.data.remote.expense.ExpenseApiInterface
 import com.example.splitbuddy.data.remote.expense.ExpenseApiInterfaceImpl
+import com.example.splitbuddy.data.remote.invite.InviteApiInterface
+import com.example.splitbuddy.data.remote.invite.InviteApiInterfaceImpl
 import com.example.splitbuddy.data.remote.settlement.SettlementApiInterface
 import com.example.splitbuddy.data.remote.settlement.SettlementApiInterfaceImpl
 import com.example.splitbuddy.data.remote.user.UserApiInterface
@@ -37,6 +39,9 @@ import com.example.splitbuddy.domain.usecase.group.GetGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.UpdateGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.AddMultipleMemberToGroupUseCase
 import com.example.splitbuddy.domain.usecase.group.RemoveMembersFromGroupUseCase
+import com.example.splitbuddy.domain.usecase.invite.AcceptInviteLinkUseCase
+import com.example.splitbuddy.domain.usecase.invite.CreateInviteLinkUseCase
+import com.example.splitbuddy.domain.usecase.invite.PreviewInviteLinkUseCase
 import com.example.splitbuddy.domain.usecase.settlement.CreateSettlementUseCase
 import com.example.splitbuddy.domain.usecase.settlement.DeleteSettlementUseCase
 import com.example.splitbuddy.domain.usecase.settlement.GetGroupBalancesUseCase
@@ -45,6 +50,9 @@ import com.example.splitbuddy.domain.usecase.user.GetAllUserUseCase
 import com.example.splitbuddy.domain.usecase.user.GetOrCreateUserUseCase
 import com.example.splitbuddy.domain.usecase.user.GetUserFriendsUseCase
 import com.example.splitbuddy.domain.usecase.user.UpdateUserUseCase
+import com.example.splitbuddy.domain.usecase.user.GetUserByIdUseCase
+import com.example.splitbuddy.domain.usecase.expense.GetExpenseByIdUseCase
+import com.example.splitbuddy.domain.usecase.expense.GetExpenseSharesByExpenseIdUseCase
 import com.example.splitbuddy.ui.home_screen.dashboard.DashboardViewModel
 import com.example.splitbuddy.ui.home_screen.expense.expense_creating.ExpenseViewModel
 import com.example.splitbuddy.ui.home_screen.expense.expense_screen.ExpenseDetailViewModel
@@ -57,6 +65,7 @@ import com.example.splitbuddy.ui.home_screen.group.group_creation.GroupCreationV
 import com.example.splitbuddy.ui.home_screen.group.groups_screen.GroupsDataViewModel
 import com.example.splitbuddy.ui.home_screen.settlement.SettlementViewModel
 import com.example.splitbuddy.ui.home_screen.top_bar.TopBarViewModel
+import com.example.splitbuddy.ui.invite.InvitePreviewViewModel
 import com.example.splitbuddy.ui.login_screen.LoginViewModel
 import com.example.splitbuddy.ui.profile.ProfileEditViewModel
 import org.koin.android.ext.koin.androidContext
@@ -120,6 +129,9 @@ object DIContainer {
         }
         single<SettlementApiInterface> {
             SettlementApiInterfaceImpl()
+        }
+        single<InviteApiInterface> {
+            InviteApiInterfaceImpl()
         }
 
         single<UserRepository> {
@@ -237,6 +249,24 @@ object DIContainer {
                 settlementQuery        = get()
             )
         }
+        single<CreateInviteLinkUseCase> {
+            CreateInviteLinkUseCase(inviteApiInterface = get())
+        }
+        single<PreviewInviteLinkUseCase> {
+            PreviewInviteLinkUseCase(inviteApiInterface = get())
+        }
+        single<AcceptInviteLinkUseCase> {
+            AcceptInviteLinkUseCase(inviteApiInterface = get())
+        }
+        single<GetUserByIdUseCase> {
+            GetUserByIdUseCase(userQuery = get())
+        }
+        single<GetExpenseByIdUseCase> {
+            GetExpenseByIdUseCase(expenseQuery = get())
+        }
+        single<GetExpenseSharesByExpenseIdUseCase> {
+            GetExpenseSharesByExpenseIdUseCase(expenseShareQuery = get())
+        }
 
         single<android.content.SharedPreferences> {
             androidContext().getSharedPreferences(
@@ -272,7 +302,8 @@ object DIContainer {
             GroupDetailViewModel(
                 getAllExpenseByGroupIdUseCase = get(),
                 getGroupUseCase = get(),
-                getGroupMembersUseCase = get()
+                getGroupMembersUseCase = get(),
+                createInviteLinkUseCase      = get()
             )
         }
         viewModel<ExpenseViewModel> {
@@ -290,15 +321,15 @@ object DIContainer {
         }
         viewModel<ExpenseDetailViewModel> {
             ExpenseDetailViewModel(
-                expenseQuery = get(),
-                expenseShareQuery = get(),
+                getExpenseByIdUseCase             = get(),
+                getExpenseSharesByExpenseIdUseCase = get(),
                 deleteExpenseUseCase = get()
             )
         }
         viewModel<ExpenseUpdateViewModel> {
             ExpenseUpdateViewModel(
-                expenseQuery = get(),
-                expenseShareQuery = get(),
+                getExpenseByIdUseCase             = get(),
+                getExpenseSharesByExpenseIdUseCase = get(),
                 getGroupMembersUseCase = get(),
                 updateExpenseUseCase = get()
             )
@@ -335,7 +366,13 @@ object DIContainer {
                 deleteSettlementUseCase = get(),
                 getGroupMembersUseCase = get(),
                 getGroupSettlementsUseCase = get(),
-                userQuery = get()
+                getUserByIdUseCase         = get()
+            )
+        }
+        viewModel<InvitePreviewViewModel> {
+            InvitePreviewViewModel(
+                previewInviteLinkUseCase = get(),
+                acceptInviteLinkUseCase = get()
             )
         }
 

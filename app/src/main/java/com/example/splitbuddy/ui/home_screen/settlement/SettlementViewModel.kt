@@ -2,7 +2,7 @@ package com.example.splitbuddy.ui.home_screen.settlement
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.splitbuddy.data.local.query.UserQuery
+import com.example.splitbuddy.domain.usecase.user.GetUserByIdUseCase
 import com.example.splitbuddy.data.remote.settlement.SettlementRequest
 import com.example.splitbuddy.data.util.toAppError
 import com.example.splitbuddy.data.util.toWriteMessage
@@ -24,7 +24,7 @@ class SettlementViewModel(
     private val deleteSettlementUseCase: DeleteSettlementUseCase,
     private val getGroupMembersUseCase: GetGroupMembersUseCase,
     private val getGroupSettlementsUseCase: GetGroupSettlementsUseCase,
-    private val userQuery: UserQuery
+    private val getUserByIdUseCase: GetUserByIdUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettlementUiState())
@@ -38,8 +38,7 @@ class SettlementViewModel(
             _uiState.update {
                 it.copy(
                     isLoading    = !isRefresh,
-                    isRefreshing = isRefresh,
-                    error        = null
+                    isRefreshing = isRefresh
                 )
             }
             try {
@@ -60,9 +59,9 @@ class SettlementViewModel(
 
                 val items = suggestions.map { s ->
                     val fromName = nameMap[s.fromUserId]
-                        ?: userQuery.getUser(s.fromUserId)?.userName ?: s.fromUserId
+                        ?: getUserByIdUseCase(s.fromUserId) ?: s.fromUserId
                     val toName = nameMap[s.toUserId]
-                        ?: userQuery.getUser(s.toUserId)?.userName ?: s.toUserId
+                        ?: getUserByIdUseCase(s.toUserId) ?: s.toUserId
 
                     val pairKey      = "${s.fromUserId}|${s.toUserId}"
                     val settlementId = paidPairsMap[pairKey]
@@ -133,7 +132,10 @@ class SettlementViewModel(
                         note       = dialog.note.ifBlank { null }
                     )
                 )
-                _uiState.update { it.copy(isSaving = false, confirmDialog = null, isSettlementRecorded = true) }
+                _uiState.update {
+                    it.copy(isSaving = false, confirmDialog = null, isSettlementRecorded = true)
+                }
+                _uiState.update { it.copy(isSettlementRecorded = false) }
                 load(currentGroupId)
 
             } catch (e: Exception) {

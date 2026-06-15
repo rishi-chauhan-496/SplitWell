@@ -83,8 +83,11 @@ class GroupsDataViewModel(
     private suspend fun buildSummaries(trips: List<Trip>): List<GroupSummary> {
         return trips.map { trip ->
             val members  = getGroupMembersUseCase(trip.id)
-            val expenses = getAllExpenseByGroupIdUseCase.load(trip.id)
-            val expenseList = (expenses as? Resource.Success)?.data ?: emptyList()
+            val expenseList = when (val expenses = getAllExpenseByGroupIdUseCase.load(trip.id)) {
+                is Resource.Success -> expenses.data ?: emptyList()
+                is Resource.Error   -> expenses.data ?: emptyList()
+                else                -> emptyList()
+            }
             GroupSummary(
                 id           = trip.id,
                 groupName    = trip.tripTitle,

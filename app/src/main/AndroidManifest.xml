@@ -17,9 +17,22 @@
         android:usesCleartextTraffic="true" >
         <activity
             android:name=".ui.home_screen.HomeActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/title_activity_home_screen"
-            android:theme="@style/Theme.SplitBuddy" />
+            android:theme="@style/Theme.SplitBuddy">
+
+            <!-- Deep link intent filter -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="paysplit.app"
+                    android:pathPrefix="/invite/" />
+            </intent-filter>
+
+        </activity>
         <activity
             android:name=".ui.login_screen.LoginActivity"
             android:exported="false"

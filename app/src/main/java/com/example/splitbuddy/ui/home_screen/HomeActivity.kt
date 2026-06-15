@@ -45,6 +45,8 @@ import com.example.splitbuddy.ui.theme.SplitBuddyTheme
 import org.koin.androidx.compose.koinViewModel
 import androidx.core.content.edit
 import com.example.splitbuddy.R
+import androidx.navigation.navDeepLink
+import com.example.splitbuddy.ui.invite.InvitePreviewScreen
 import com.example.splitbuddy.ui.home_screen.dashboard.DashboardScreen
 import com.example.splitbuddy.ui.home_screen.friend.FriendListScreen
 import com.example.splitbuddy.ui.profile.ProfileScreen
@@ -59,6 +61,12 @@ class HomeActivity : ComponentActivity() {
                 MainScreen()
             }
         }
+    }
+
+    // Called when app is already running and receives a new deep link
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)   // updates the intent so NavHost picks it up
     }
 }
 
@@ -100,6 +108,8 @@ fun MainScreen() {
 
     val snackbarHostState = remember { SnackbarHostState() }
     val strSettlement = stringResource(R.string.topbar_settlement)
+
+    val strInvitePreview = stringResource(R.string.topbar_invite_preview)
 
     LaunchedEffect(route) {
         when {
@@ -255,6 +265,16 @@ fun MainScreen() {
                 )
             }
 
+            route?.startsWith("invitePreview/") == true -> {
+                topBarViewModel.update(
+                    TopBarState(
+                        title    = strInvitePreview,
+                        isVisible = true,
+                        showBack  = true
+                    )
+                )
+            }
+
             else -> {
                 topBarViewModel.update(TopBarState(isVisible = false))
             }
@@ -323,6 +343,7 @@ fun MainScreen() {
                 val groupId = backStackEntry.arguments?.getString("groupId") ?: ""
                 GroupScreen(
                     groupId = groupId,
+                    ownerID = ownerID,
                     onAddExpense = {
                         navController.navigate(Screen.ExpenseScreen1.route + "/$groupId")
                     },
@@ -413,6 +434,28 @@ fun MainScreen() {
             composable(Screen.SettlementScreen.route) { backStackEntry ->
                 val groupId = backStackEntry.arguments?.getString("groupId") ?: ""
                 SettlementScreen(groupId = groupId)
+            }
+
+            composable(
+                route = Screen.InvitePreviewScreen.route,
+                deepLinks = listOf(
+                    navDeepLink {
+                        uriPattern = "https://paysplit.app/invite/{token}"
+                    }
+                )
+            ) { backStackEntry ->
+                val token = backStackEntry.arguments?.getString("token") ?: ""
+                InvitePreviewScreen(
+                    token       = token,
+                    ownerID     = ownerID,
+                    onJoinGroup = { groupId ->
+                        // Navigate to GroupScreen, clear invite preview from back stack
+                        navController.navigate(Screen.GroupScreen.createRoute(groupId)) {
+                            popUpTo(Screen.InvitePreviewScreen.route) { inclusive = true }
+                        }
+                    },
+                    onCancel = { navController.popBackStack() }
+                )
             }
         }
 

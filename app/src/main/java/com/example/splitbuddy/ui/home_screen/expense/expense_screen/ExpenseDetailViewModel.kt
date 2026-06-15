@@ -2,8 +2,8 @@ package com.example.splitbuddy.ui.home_screen.expense.expense_screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.splitbuddy.data.local.query.ExpenseQuery
-import com.example.splitbuddy.data.local.query.ExpenseShareQuery
+import com.example.splitbuddy.domain.usecase.expense.GetExpenseByIdUseCase
+import com.example.splitbuddy.domain.usecase.expense.GetExpenseSharesByExpenseIdUseCase
 import com.example.splitbuddy.data.util.toAppError
 import com.example.splitbuddy.data.util.toWriteMessage
 import com.example.splitbuddy.domain.usecase.expense.DeleteExpenseUseCase
@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ExpenseDetailViewModel(
-    private val expenseQuery: ExpenseQuery,
-    private val expenseShareQuery: ExpenseShareQuery,
+    private val getExpenseByIdUseCase: GetExpenseByIdUseCase,
+    private val getExpenseSharesByExpenseIdUseCase: GetExpenseSharesByExpenseIdUseCase,
     private val deleteExpenseUseCase: DeleteExpenseUseCase
 ) : ViewModel() {
 
@@ -26,8 +26,8 @@ class ExpenseDetailViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             try {
-                val expense = expenseQuery.getExpenseById(expenseId)
-                val shares = expenseShareQuery.getSharesByExpenseId(expenseId)
+                val expense = getExpenseByIdUseCase(expenseId)
+                val shares = getExpenseSharesByExpenseIdUseCase(expenseId)
                 _state.update {
                     it.copy(isLoading = false, expense = expense, shares = shares)
                 }

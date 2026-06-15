@@ -32,4 +32,8 @@ sealed class Screen(val route: String) {
     object SettlementScreen : Screen("settlement/{groupId}") {
         fun createRoute(groupId: String) = "settlement/$groupId"
     }
+
+    object InvitePreviewScreen : Screen("invitePreview/{token}") {
+        fun createRoute(token: String) = "invitePreview/$token"
+    }
 }
