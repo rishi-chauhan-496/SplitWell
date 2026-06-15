@@ -28,8 +28,6 @@ class GroupUpdatingViewModel(
     private val _uiState = MutableStateFlow(GroupUpdateUiState())
     val uiState: StateFlow<GroupUpdateUiState> = _uiState
 
-    private var isLoaded = false
-
     // ── Field update ──────────────────────────────────────────────────────────
 
     fun onNameChange(name: String) {
@@ -47,7 +45,7 @@ class GroupUpdatingViewModel(
     // ── Load group info + members ─────────────────────────────────────────────
 
     fun load(groupId: String) {
-        if (groupId.isBlank() || isLoaded) return
+        if (groupId.isBlank()) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -63,8 +61,6 @@ class GroupUpdatingViewModel(
                         members   = members
                     )
                 }
-                isLoaded = true
-
             } catch (_: Exception) {
                 _uiState.update { it.copy(isLoading = false) }
                 SnackbarController.show("Failed to load group")
@@ -127,6 +123,7 @@ class GroupUpdatingViewModel(
                             isMembersRemoved = true
                         )
                     }
+                    _uiState.update { it.copy(isMembersRemoved = false) }
                 }
                 is Resource.Error -> {
                     _uiState.update { it.copy(isLoading = false) }

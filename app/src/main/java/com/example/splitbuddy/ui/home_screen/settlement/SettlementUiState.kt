@@ -7,8 +7,7 @@ data class SettlementUiState(
     val isSettlementRecorded: Boolean = false,
     val suggestions: List<SuggestionItem> = emptyList(),
     val confirmDialog: ConfirmDialogState? = null,
-    val unsettleDialog: UnsettleDialogState? = null,
-    val error: String? = null
+    val unsettleDialog: UnsettleDialogState? = null
 )
 
 data class SuggestionItem(

@@ -6,6 +6,10 @@ import com.example.splitbuddy.data.util.Resource
 import com.example.splitbuddy.domain.usecase.expense.GetAllExpenseByGroupIdUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupMembersUseCase
 import com.example.splitbuddy.domain.usecase.group.GetGroupUseCase
+import com.example.splitbuddy.data.util.toAppError
+import com.example.splitbuddy.data.util.toWriteMessage
+import com.example.splitbuddy.domain.usecase.invite.CreateInviteLinkUseCase
+import com.example.splitbuddy.ui.util.SnackbarController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -14,7 +18,8 @@ import kotlinx.coroutines.launch
 class GroupDetailViewModel(
     private val getAllExpenseByGroupIdUseCase: GetAllExpenseByGroupIdUseCase,
     private val getGroupUseCase: GetGroupUseCase,
-    private val getGroupMembersUseCase: GetGroupMembersUseCase
+    private val getGroupMembersUseCase: GetGroupMembersUseCase,
+    private val createInviteLinkUseCase: CreateInviteLinkUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GroupDetailUiState())
@@ -35,7 +40,7 @@ class GroupDetailViewModel(
                 val group   = getGroupUseCase(groupId)
                 val members = getGroupMembersUseCase(groupId)
 
-                _uiState.update { it ->
+                _uiState.update {
                     it.copy(
                         isLoading   = false,
                         isRefreshing = false,
@@ -60,5 +65,26 @@ class GroupDetailViewModel(
             getAllExpenseByGroupIdUseCase.load(groupId)
             _uiState.update { it.copy(isRefreshing = false) }
         }
+    }
+
+    // Called when user taps the invite button
+    fun createInvite(groupId: String, ownerID: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isGeneratingInvite = true) }
+            try {
+                val url = createInviteLinkUseCase(groupId, ownerID)
+                _uiState.update {
+                    it.copy(isGeneratingInvite = false, inviteUrl = url)
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isGeneratingInvite = false) }
+                SnackbarController.show(e.toAppError().toWriteMessage())
+            }
+        }
+    }
+
+    // Called after share sheet is shown — clears the URL so it doesn't re-trigger
+    fun onInviteShared() {
+        _uiState.update { it.copy(inviteUrl = null) }
     }
 }

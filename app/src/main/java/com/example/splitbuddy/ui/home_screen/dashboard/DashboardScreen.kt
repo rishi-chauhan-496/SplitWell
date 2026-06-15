@@ -74,12 +74,14 @@ fun DashboardScreen(userId: String) {
                     item { EmptyHint(text = stringResource(R.string.dashboard_empty_expenses)) }
                 } else {
                     items(state.recentExpenses) { expense ->
-                        ExpenseListCard(
-                            title = expense.title,
-                            by = expense.paidByName,
-                            amount = expense.amount,
-                            createdAt = expense.createdAt
-                        )
+                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            ExpenseListCard(
+                                title = expense.title,
+                                by = expense.paidByName,
+                                amount = expense.amount,
+                                createdAt = expense.createdAt
+                            )
+                        }
                     }
                 }
             }

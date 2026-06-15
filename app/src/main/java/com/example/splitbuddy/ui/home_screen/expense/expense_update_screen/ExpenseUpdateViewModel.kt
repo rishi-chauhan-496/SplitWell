@@ -2,8 +2,8 @@ package com.example.splitbuddy.ui.home_screen.expense.expense_update_screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.splitbuddy.data.local.query.ExpenseQuery
-import com.example.splitbuddy.data.local.query.ExpenseShareQuery
+import com.example.splitbuddy.domain.usecase.expense.GetExpenseByIdUseCase
+import com.example.splitbuddy.domain.usecase.expense.GetExpenseSharesByExpenseIdUseCase
 import com.example.splitbuddy.data.remote.expense.ExpenseRequest
 import com.example.splitbuddy.data.remote.expense.ShareRequest
 import com.example.splitbuddy.data.util.toAppError
@@ -22,10 +22,10 @@ import kotlin.math.floor
 import kotlin.math.roundToInt
 
 class ExpenseUpdateViewModel(
-    private val expenseQuery: ExpenseQuery,
-    private val expenseShareQuery: ExpenseShareQuery,
+    private val getExpenseByIdUseCase: GetExpenseByIdUseCase,
+    private val getExpenseSharesByExpenseIdUseCase: GetExpenseSharesByExpenseIdUseCase,
     private val getGroupMembersUseCase: GetGroupMembersUseCase,
-    private val updateExpenseUseCase: UpdateExpenseUseCase,
+    private val updateExpenseUseCase: UpdateExpenseUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ExpenseUpdateUiState())
@@ -35,8 +35,8 @@ class ExpenseUpdateViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             try {
-                val expenseDeferred = async { expenseQuery.getExpenseById(expenseId) }
-                val sharesDeferred  = async { expenseShareQuery.getSharesByExpenseId(expenseId) }
+                val expenseDeferred = async { getExpenseByIdUseCase(expenseId) }
+                val sharesDeferred  = async { getExpenseSharesByExpenseIdUseCase(expenseId) }
                 val membersDeferred = async { getGroupMembersUseCase(groupId) }
 
                 val expense = expenseDeferred.await()

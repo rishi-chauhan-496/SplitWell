@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +30,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun GroupScreen(
     groupId: String,
+    ownerID: String,
     onAddExpense: () -> Unit,
     onAddMember: () -> Unit,
     onSettlement: () -> Unit,
@@ -36,8 +38,27 @@ fun GroupScreen(
 ) {
     val viewModel: GroupDetailViewModel = koinViewModel()
     val state = viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(groupId) { viewModel.load(groupId) }
+
+    // Open Android share sheet when inviteUrl is ready
+    LaunchedEffect(state.value.inviteUrl) {
+        state.value.inviteUrl?.let { url ->
+            val sendIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                putExtra(
+                    android.content.Intent.EXTRA_TEXT,
+                    "Join my group on SplitBuddy!\n$url"
+                )
+                type = "text/plain"
+            }
+            val shareIntent = android.content.Intent.createChooser(
+                sendIntent, "Share Invite Link"
+            )
+            context.startActivity(shareIntent)
+            viewModel.onInviteShared()       // clear URL after sharing
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -67,12 +88,24 @@ fun GroupScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Text(stringResource(R.string.group_member_count, state.value.memberCount), color = Color.White.copy(0.8f), fontSize = 14.sp)
-                        Text(stringResource(R.string.group_expense_count, state.value.expenses.size), color = Color.White.copy(0.8f), fontSize = 14.sp)
+                        Text(
+                            stringResource(R.string.group_member_count, state.value.memberCount),
+                            color = Color.White.copy(0.8f),
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            stringResource(
+                                R.string.group_expense_count,
+                                state.value.expenses.size
+                            ), color = Color.White.copy(0.8f), fontSize = 14.sp
+                        )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = stringResource(R.string.group_total_amount, "%.2f".format(state.value.totalAmount)),
+                        text = stringResource(
+                            R.string.group_total_amount,
+                            "%.2f".format(state.value.totalAmount)
+                        ),
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold
@@ -83,9 +116,49 @@ fun GroupScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    GroupActionButton(stringResource(R.string.group_action_add_member),  R.drawable.group,      onAddMember,  Modifier.weight(1f))
-                    GroupActionButton(stringResource(R.string.group_action_settlement),  R.drawable.settlement, onSettlement, Modifier.weight(1f))
-                    GroupActionButton(stringResource(R.string.group_action_add_expense), R.drawable.expense,    onAddExpense, Modifier.weight(1f))
+                    GroupActionButton(
+                        stringResource(R.string.group_action_add_member),
+                        R.drawable.group,
+                        onAddMember,
+                        Modifier.weight(1f)
+                    )
+                    GroupActionButton(
+                        stringResource(R.string.group_action_settlement),
+                        R.drawable.settlement,
+                        onSettlement,
+                        Modifier.weight(1f)
+                    )
+                    GroupActionButton(
+                        stringResource(R.string.group_action_add_expense),
+                        R.drawable.expense,
+                        onAddExpense,
+                        Modifier.weight(1f)
+                    )
+                }
+            }
+            // Invite icon button — top right corner of the card
+            IconButton(
+                onClick = { viewModel.createInvite(groupId, ownerID) },
+                enabled = !state.value.isGeneratingInvite,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+            ) {
+                if (state.value.isGeneratingInvite) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(
+                            R.drawable.link  // use your share icon
+                        ),
+                        contentDescription = "Invite",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }
@@ -93,24 +166,29 @@ fun GroupScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         if (state.value.expenses.isEmpty()) {
-            EmptyStateView(message = stringResource(R.string.group_empty_expenses), modifier = Modifier.weight(1f))
+            EmptyStateView(
+                message = stringResource(R.string.group_empty_expenses),
+                modifier = Modifier.weight(1f)
+            )
         } else {
             PullToRefreshBox(
                 isRefreshing = state.value.isRefreshing,
-                onRefresh    = { viewModel.refresh(groupId) },
-                modifier     = Modifier.weight(1f)
+                onRefresh = { viewModel.refresh(groupId) },
+                modifier = Modifier.weight(1f)
             ) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(state.value.expenses) { expense ->
-                        ExpenseListCard(
-                            title = expense.title,
-                            by = expense.paidByUserName,
-                            amount = expense.amount,
-                            createdAt = expense.createdAt,
-                            onClick = { onExpenseClick(expense.id) }
-                        )
+                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            ExpenseListCard(
+                                title = expense.title,
+                                by = expense.paidByUserName,
+                                amount = expense.amount,
+                                createdAt = expense.createdAt,
+                                onClick = { onExpenseClick(expense.id) }
+                            )
+                        }
                     }
                 }
             }
@@ -133,16 +211,19 @@ private fun GroupActionButton(label: String, icon: Int, onClick: () -> Unit, mod
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally ) {
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Icon(
                 painter = painterResource(icon),
                 contentDescription = label,
                 modifier = Modifier.size(18.dp),
                 tint = Color.White
             )
-            Text(label, fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Medium,
+            Text(
+                label, fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Medium,
                 maxLines = 1,
-                softWrap = false)
+                softWrap = false
+            )
         }
     }
 }

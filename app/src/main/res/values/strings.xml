@@ -137,6 +137,7 @@
     <string name="toast_members_removed">Members removed</string>
     <string name="toast_profile_saved">Profile saved</string>
     <string name="toast_settlement_recorded">Settlement recorded</string>
+    <string name="topbar_invite_preview">Join Group</string>
 
     <string name="default_web_client_id">203002226684-mhat13a36eomecekr6k84rcjjrfqmphf.apps.googleusercontent.com</string>
 
