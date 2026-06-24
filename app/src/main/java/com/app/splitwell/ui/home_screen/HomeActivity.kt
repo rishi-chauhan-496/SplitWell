@@ -335,6 +335,7 @@ fun MainScreen() {
                 val groupId = backStackEntry.arguments?.getString("groupId") ?: ""
                 AddMemberScreen(
                     groupId = groupId,
+                    userId = ownerID,
                     onBack = { navController.popBackStack() }
                 )
             }

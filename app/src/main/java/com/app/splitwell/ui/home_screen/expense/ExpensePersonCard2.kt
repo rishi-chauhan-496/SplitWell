@@ -16,12 +16,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.app.splitwell.data.local.model.User
+import com.app.splitwell.domain.model.Friend
 import com.app.splitwell.ui.theme.Primary
 
 @Composable
 fun ExpensePersonCard2(
-    user: User,
+    friend: Friend,
     isSelected: Boolean,
     onCheckedChange: () -> Unit
 ) {
@@ -41,12 +41,9 @@ fun ExpensePersonCard2(
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Initials avatar
             Box(
                 modifier = Modifier
                     .size(44.dp)
@@ -55,7 +52,7 @@ fun ExpensePersonCard2(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = user.firstName.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
+                    text = friend.displayName.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
                     color = Primary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
@@ -66,13 +63,13 @@ fun ExpensePersonCard2(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "${user.firstName} ${user.lastName}",
+                    text = friend.displayName,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = user.email,
+                    text = friend.email,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     maxLines = 1,
