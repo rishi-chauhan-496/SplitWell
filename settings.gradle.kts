@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SplitBuddy"
+rootProject.name = "SplitWell"
 include(":app")

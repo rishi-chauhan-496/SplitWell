@@ -29,13 +29,13 @@ android {
             keyAlias = localProperties.getProperty("RELEASE_ALIAS")
         }
     }
-    namespace = "com.example.splitbuddy"
+    namespace = "com.app.splitwell"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.splitbuddy"
+        applicationId = "com.app.splitwell"
         minSdk = 28
         targetSdk = 36
         versionCode = 1
@@ -67,6 +67,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -119,4 +120,9 @@ dependencies {
     androidTestImplementation("androidx.test:core:1.7.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+    //network log
+    //retrofit
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.4.0")
 }

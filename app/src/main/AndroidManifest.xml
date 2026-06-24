@@ -11,37 +11,47 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SplitBuddy"
-        android:usesCleartextTraffic="true" >
+        android:theme="@style/Theme.SplitWell">
         <activity
             android:name=".ui.home_screen.HomeActivity"
             android:exported="true"
             android:label="@string/title_activity_home_screen"
-            android:theme="@style/Theme.SplitBuddy">
+            android:theme="@style/Theme.SplitWell">
 
-            <!-- Deep link intent filter -->
+            <!-- Web App Link (https) — needs APP_INVITE_BASE_URL + assetlinks.json to verify -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="paysplit.app"
+                    android:host="pratikprajapati.cloud"
                     android:pathPrefix="/invite/" />
+            </intent-filter>
+
+            <!-- Custom scheme — what the server is actually sending right now -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="splitwell"
+                    android:host="invite" />
             </intent-filter>
 
         </activity>
         <activity
             android:name=".ui.login_screen.LoginActivity"
             android:exported="false"
-            android:theme="@style/Theme.SplitBuddy" />
+            android:theme="@style/Theme.SplitWell" />
         <activity
             android:name=".ui.intro_screen.IntroActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.SplitBuddy" >
+            android:theme="@style/Theme.SplitWell" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

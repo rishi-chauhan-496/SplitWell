@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">SplitBuddy</string>
+    <string name="app_name">SplitWell</string>
     <string name="onboard_title_1">Save your time and money</string>
     <string name="onboard_desc_1">Enjoy together, happy to share and save your time with transactions at home.</string>
     <string name="onboard_title_2">Easy way to split payment</string>
@@ -138,6 +138,28 @@
     <string name="toast_profile_saved">Profile saved</string>
     <string name="toast_settlement_recorded">Settlement recorded</string>
     <string name="topbar_invite_preview">Join Group</string>
+    <string name="settlement_amount_format">₹%s</string>
+    <string name="settlement_arrow">———→</string>
+    <string name="settlement_confirm_title">Confirm Settlement</string>
+    <string name="settlement_pays_summary">%1$s pays %2$s</string>
+    <string name="settlement_unsettle_title">Unsettle Payment</string>
+    <string name="settlement_unsettle_message">Remove settlement between %1$s and %2$s?</string>
+    <string name="settlement_unsettle_note">This will mark the payment as pending again.</string>
+    <string name="username_prefix">@%s</string>
+    <string name="login_logo_initials">SW</string>
+    <string name="expense_confirm_total_question">%1$s ₹%2$s ?</string>
+    <string name="cd_remove_mark">✕</string>
+    <string name="error_check_network">Please check your network connection and try again.</string>
+    <string name="error_user_not_found">User not found</string>
+    <string name="error_username_required">Username required</string>
+    <string name="error_username_too_short">Username must be at least 3 characters</string>
+    <string name="error_contact_required">Contact required</string>
+    <string name="error_generic_try_again">Something went wrong. Please try again later.</string>
+    <string name="dashboard_default_name">there</string>
+    <string name="profile_sign_out">Sign Out</string>
+    <string name="profile_sign_out_confirm_title">Sign out?</string>
+    <string name="profile_sign_out_confirm_message">You\'ll need to sign in again to use SplitWell.</string>
+    <string name="profile_sign_out_cancel">Cancel</string>
 
     <string name="default_web_client_id">203002226684-mhat13a36eomecekr6k84rcjjrfqmphf.apps.googleusercontent.com</string>
 
