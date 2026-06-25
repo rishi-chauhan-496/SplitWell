@@ -49,7 +49,6 @@ class GroupDetailViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        isRefreshing = false,
                         groupName = group?.tripTitle ?: "",
                         memberCount = members.size,
                         expenses = expenses,
@@ -90,6 +89,7 @@ class GroupDetailViewModel(
             checkAvailability(groupId, ownerID)
         } finally {
             isFetching = false
+            _uiState.update { it.copy(isRefreshing = false) }
         }
     }
 
