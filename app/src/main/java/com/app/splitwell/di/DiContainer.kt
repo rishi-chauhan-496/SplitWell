@@ -300,7 +300,7 @@ object DIContainer {
         viewModel<GroupCreationViewModel> {
             GroupCreationViewModel(
                 createGroupUseCase = get(),
-                getAllUserUseCase = get()
+                getUserFriendsUseCase = get()
             )
         }
         viewModel<GroupsDataViewModel> {
@@ -336,7 +336,7 @@ object DIContainer {
         }
         viewModel<AddMemberViewModel> {
             AddMemberViewModel(
-                getAllUserUseCase = get(),
+                getUserFriendsUseCase = get(),
                 getGroupMembersUseCase = get(),
                 addMultipleMemberToGroupUseCase = get()
             )

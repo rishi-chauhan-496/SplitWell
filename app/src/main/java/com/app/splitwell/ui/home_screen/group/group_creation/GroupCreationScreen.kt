@@ -12,6 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.app.splitwell.ui.components.AppTextField
+import com.app.splitwell.ui.components.EmptyStateView
 import com.app.splitwell.ui.components.GradientButton
 import com.app.splitwell.ui.components.LoadingView
 import com.app.splitwell.ui.home_screen.expense.ExpensePersonCard2
@@ -27,6 +28,10 @@ fun GroupCreationScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
     val toastMsg = stringResource(R.string.toast_group_created)
+
+    LaunchedEffect(Unit) {
+        viewModel.load(userId)
+    }
 
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
@@ -61,16 +66,23 @@ fun GroupCreationScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (uiState.isLoading) {
-            LoadingView(modifier = Modifier.weight(1f))
-        } else {
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(uiState.users) { user ->
-                    ExpensePersonCard2(
-                        user = user,
-                        isSelected = uiState.selectedUserIds.contains(user.id),
-                        onCheckedChange = { viewModel.onUserSelected(user.id) }
-                    )
+        when {
+            uiState.isLoading -> LoadingView(modifier = Modifier.weight(1f))
+
+            uiState.friends.isEmpty() -> EmptyStateView(
+                message = stringResource(R.string.friends_empty_message),
+                modifier = Modifier.weight(1f)
+            )
+
+            else -> {
+                LazyColumn(modifier = Modifier.weight(1f)) {
+                    items(uiState.friends) { friend ->
+                        ExpensePersonCard2(
+                            friend = friend,
+                            isSelected = uiState.selectedUserIds.contains(friend.id),
+                            onCheckedChange = { viewModel.onUserSelected(friend.id) }
+                        )
+                    }
                 }
             }
         }

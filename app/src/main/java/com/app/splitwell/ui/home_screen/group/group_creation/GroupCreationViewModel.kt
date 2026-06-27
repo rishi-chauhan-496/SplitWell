@@ -6,7 +6,7 @@ import com.app.splitwell.data.remote.group.CreateGroupRequest
 import com.app.splitwell.data.util.Resource
 import com.app.splitwell.data.util.toWriteMessage
 import com.app.splitwell.domain.usecase.group.CreateGroupUseCase
-import com.app.splitwell.domain.usecase.user.GetAllUserUseCase
+import com.app.splitwell.domain.usecase.user.GetUserFriendsUseCase
 import com.app.splitwell.ui.util.SnackbarController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,35 +15,25 @@ import kotlinx.coroutines.launch
 
 class GroupCreationViewModel(
     private val createGroupUseCase: CreateGroupUseCase,
-    private val getAllUserUseCase: GetAllUserUseCase
-): ViewModel() {
+    private val getUserFriendsUseCase: GetUserFriendsUseCase
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GroupCreationUiState())
     val uiState: StateFlow<GroupCreationUiState> = _uiState
 
-    init {
-        getAllUsers()
-    }
-
-    private fun getAllUsers() {
+    fun load(userId: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            runCatching { getAllUserUseCase() }
-                .onSuccess { users ->
+            runCatching { getUserFriendsUseCase(userId) }
+                .onSuccess { friends ->
                     _uiState.update {
-                        it.copy(
-                            users = users,
-                            isLoading = false
-                        )
+                        it.copy(friends = friends, isLoading = false, error = null)
                     }
                 }
                 .onFailure { throwable ->
                     _uiState.update { state ->
-                        state.copy(
-                            error = throwable.message,
-                            isLoading = false
-                        )
+                        state.copy(error = throwable.message, isLoading = false)
                     }
                 }
         }
@@ -56,10 +46,8 @@ class GroupCreationViewModel(
     fun onUserSelected(userId: String) {
         _uiState.update { state ->
             val newSet = state.selectedUserIds.toMutableSet()
-
             if (newSet.contains(userId)) newSet.remove(userId)
             else newSet.add(userId)
-
             state.copy(selectedUserIds = newSet)
         }
     }
@@ -77,9 +65,7 @@ class GroupCreationViewModel(
             )
 
             when (result) {
-                is Resource.Success -> _uiState.update {
-                    it.copy(isLoading = false, success = true)
-                }
+                is Resource.Success -> _uiState.update { it.copy(isLoading = false, success = true) }
                 is Resource.Error -> {
                     _uiState.update { it.copy(isLoading = false) }
                     SnackbarController.show(result.error.toWriteMessage())

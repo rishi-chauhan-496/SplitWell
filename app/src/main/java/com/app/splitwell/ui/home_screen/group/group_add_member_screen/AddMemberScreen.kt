@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.app.splitwell.data.local.model.User
+import com.app.splitwell.domain.model.Friend
 import com.app.splitwell.ui.components.EmptyStateView
 import com.app.splitwell.ui.components.GradientButton
 import com.app.splitwell.ui.components.InitialsAvatar
@@ -30,6 +30,7 @@ import com.app.splitwell.R
 @Composable
 fun AddMemberScreen(
     groupId: String,
+    userId: String,
     onBack: () -> Unit
 ) {
     val viewModel: AddMemberViewModel = koinViewModel()
@@ -37,7 +38,7 @@ fun AddMemberScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     val toastMsg = stringResource(R.string.toast_members_added)
 
-    LaunchedEffect(groupId) { viewModel.load(groupId) }
+    LaunchedEffect(groupId) { viewModel.load(groupId, userId) }
     LaunchedEffect(state.value.isSaved) {
         if (state.value.isSaved) {
             Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()
@@ -75,21 +76,21 @@ fun AddMemberScreen(
                 }
             }
 
-            state.value.users.isEmpty() -> {
+            state.value.friends.isEmpty() -> {
                 EmptyStateView(
-                    message = stringResource(R.string.add_member_no_users),
+                    message = stringResource(R.string.friends_empty_message),
                     modifier = Modifier.weight(1f)
                 )
             }
 
             else -> {
                 LazyColumn(modifier = Modifier.weight(1f)) {
-                    items(state.value.users) { user ->
-                        UserSelectCard(
-                            user = user,
-                            isSelected = user.id in state.value.selectedUserIds,
-                            isExisting = user.id in state.value.existingMemberIds,
-                            onClick = { viewModel.onUserToggle(user.id) }
+                    items(state.value.friends) { friend ->
+                        FriendSelectCard(
+                            friend = friend,
+                            isSelected = friend.id in state.value.selectedUserIds,
+                            isExisting = friend.id in state.value.existingMemberIds,
+                            onClick = { viewModel.onUserToggle(friend.id) }
                         )
                     }
                 }
@@ -108,8 +109,8 @@ fun AddMemberScreen(
 }
 
 @Composable
-private fun UserSelectCard(
-    user: User,
+private fun FriendSelectCard(
+    friend: Friend,
     isSelected: Boolean,
     isExisting: Boolean,
     onClick: () -> Unit
@@ -119,10 +120,7 @@ private fun UserSelectCard(
         isSelected -> Primary
         else       -> Color.Transparent
     }
-    val bgColor = when {
-        isSelected -> Primary.copy(alpha = 0.08f)
-        else       -> MaterialTheme.colorScheme.background
-    }
+    val bgColor = if (isSelected) Primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.background
 
     Row(
         modifier = Modifier
@@ -136,7 +134,7 @@ private fun UserSelectCard(
         verticalAlignment = Alignment.CenterVertically
     ) {
         InitialsAvatar(
-            name = user.firstName,
+            name = friend.displayName,
             backgroundColor = if (isExisting) Color.LightGray else Primary.copy(alpha = 0.15f),
             textColor = if (isExisting) Color.Gray else Primary
         )
@@ -145,13 +143,12 @@ private fun UserSelectCard(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "${user.firstName} ${user.lastName}",
+                text = friend.displayName,
                 fontWeight = FontWeight.SemiBold,
                 color = if (isExisting) Color.Gray else MaterialTheme.colorScheme.secondary
             )
             Text(
-                text = if (isExisting) stringResource(R.string.add_member_already_in_group)
-                else user.email,
+                text = if (isExisting) stringResource(R.string.add_member_already_in_group) else friend.email,
                 fontSize = 12.sp,
                 color = Color.Gray
             )
@@ -159,10 +156,7 @@ private fun UserSelectCard(
 
         if (isSelected) {
             Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(androidx.compose.foundation.shape.CircleShape)
-                    .background(Primary),
+                modifier = Modifier.size(24.dp).clip(androidx.compose.foundation.shape.CircleShape).background(Primary),
                 contentAlignment = Alignment.Center
             ) {
                 Text("✓", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
