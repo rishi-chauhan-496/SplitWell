@@ -16,17 +16,32 @@ val localProperties = Properties().apply {
 
 android {
     signingConfigs {
+        val appconfigFile = rootProject.file("app/appconfig.properties")
+
         getByName("debug") {
-            storeFile = file(localProperties.getProperty("DEBUG_FILE_PATH"))
-            storePassword = localProperties.getProperty("DEBUG_PASSWORD")
-            keyPassword = localProperties.getProperty("DEBUG_PASSWORD")
-            keyAlias = localProperties.getProperty("DEBUG_ALIAS")
+            if (appconfigFile.exists()) {
+                val appconfig = Properties().apply {
+                    load(appconfigFile.inputStream())
+                }
+                storeFile = file(appconfig["DEBUG_FILE_PATH"] as String)
+                storePassword = appconfig["DEBUG_PASSWORD"] as String
+                keyAlias = appconfig["DEBUG_ALIAS"] as String
+                keyPassword = appconfig["DEBUG_PASSWORD"] as String
+            }
+            // If appconfig.properties doesn't exist (CI environment),
+            // Android falls back to its own auto-generated debug keystore.
         }
+
         create("release") {
-            storeFile = file(localProperties.getProperty("RELEASE_FILE_PATH"))
-            storePassword = localProperties.getProperty("RELEASE_PASSWORD")
-            keyPassword = localProperties.getProperty("RELEASE_PASSWORD")
-            keyAlias = localProperties.getProperty("RELEASE_ALIAS")
+            if (appconfigFile.exists()) {
+                val appconfig = Properties().apply {
+                    load(appconfigFile.inputStream())
+                }
+                storeFile = file(appconfig["RELEASE_FILE_PATH"] as String)
+                storePassword = appconfig["RELEASE_PASSWORD"] as String
+                keyAlias = appconfig["RELEASE_ALIAS"] as String
+                keyPassword = appconfig["RELEASE_PASSWORD"] as String
+            }
         }
     }
     namespace = "com.app.splitwell"
