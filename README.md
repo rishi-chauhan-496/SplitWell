@@ -25,6 +25,7 @@
 - [Deep Linking & Invites](#-deep-linking--invites)
 - [Setup & Installation](#-setup--installation)
 - [CI/CD Pipeline](#-cicd-pipeline)
+- [Official Documentation](#-official-documentation)
 
 ---
 
@@ -301,6 +302,21 @@ This project includes a continuous integration workflow powered by **GitHub Acti
 - Triggers on every `push` to `main` or feature branches.
 - Sets up Java 17 Temurin environment and caches Gradle dependencies.
 - Compiles the application and generates the debug APK artifact automatically.
+
+---
+
+## 📚 Official Documentation
+
+Below are links to the official documentation for key framework components and libraries used in this project:
+
+- [Android Developer Documentation](https://developer.android.com/docs) — Official guide to modern Android development platform.
+- [Jetpack Compose Documentation](https://developer.android.com/jetpack/compose) — Official documentation for building native Android UI with Jetpack Compose.
+- [Guide to App Architecture](https://developer.android.com/topic/architecture) — Official Android guide to Clean Architecture and UI/Data layer separation.
+- [Kotlin Programming Language](https://kotlinlang.org/docs/home.html) — Official documentation for language syntax, coroutines, and flow.
+- [Koin Dependency Injection](https://insert-koin.io/docs/quickstart/android-compose) — Official documentation for Koin dependency injection in Android Compose.
+- [Retrofit Documentation](https://square.github.io/retrofit/) — Official documentation for type-safe HTTP client library by Square.
+- [Firebase Authentication Guides](https://firebase.google.com/docs/auth) — Official Firebase Auth documentation and API references.
+- [Android Credential Manager API](https://developer.android.com/identity/sign-in/credential-manager) — Official Android guide for seamless Google Sign-In and credential management.
 
 ---
 
