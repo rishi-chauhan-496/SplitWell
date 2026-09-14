@@ -7,7 +7,6 @@
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2B%20MVVM-success.svg)](#architecture--project-structure)
 [![DI](https://img.shields.io/badge/DI-Koin-purple.svg)](https://insert-koin.io/)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue.svg)](.github/workflows/build.yml)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **SplitWell** is a modern, intuitive, and feature-rich Android application designed for effortlessly tracking group expenses, managing shared bills, and simplifying complex interpersonal debts. Built 100% in Kotlin using Jetpack Compose (Material 3), Clean Architecture, MVVM design pattern, Koin dependency injection, and Retrofit REST APIs.
 
@@ -18,11 +17,14 @@
 - [Key Features](#-key-features)
 - [Screenshot Gallery](#-screenshot-gallery)
 - [Tech Stack & Architecture](#-tech-stack--architecture)
+- [App Navigation & UI Flow](#-app-navigation--ui-flow)
+- [Debt Simplification Algorithm](#-debt-simplification-algorithm)
+- [Data Synchronization Architecture](#-data-synchronization-architecture)
+- [Remote REST API & Network Layer](#-remote-rest-api--network-layer)
 - [Project Structure](#-project-structure)
 - [Deep Linking & Invites](#-deep-linking--invites)
 - [Setup & Installation](#-setup--installation)
 - [CI/CD Pipeline](#-cicd-pipeline)
-- [License](#-license)
 
 ---
 
@@ -82,6 +84,117 @@
 | **Authentication** | Firebase Auth, Android Credential Manager, Google Identity SDK |
 | **Local Data Engine** | Custom SQLite Database Engine & Query Mappers |
 | **Build System & CI** | Gradle Kotlin DSL (`build.gradle.kts`), GitHub Actions |
+
+---
+
+## 🗺️ App Navigation & UI Flow
+
+SplitWell utilizes a single-activity primary host (`HomeActivity`) coupled with dedicated entry activities (`IntroActivity` and `LoginActivity`) for auth and onboarding.
+
+```text
+[ IntroActivity ] ➔ [ LoginActivity ] ➔ [ HomeActivity (Main Navigation Host) ]
+                                                   │
+     ┌──────────────────┬──────────────────────────┼─────────────────────────┐
+     ▼                  ▼                          ▼                         ▼
+[ Dashboard ]    [ Groups Screen ]        [ Settlements Screen ]    [ Profile Screen ]
+                        │
+                        ├─► [ Group Detail Screen ]
+                        │         │
+                        │         ├─► [ Multi-Step Expense Wizard ]
+                        │         │     ├─► Step 1: Expense Details
+                        │         │     ├─► Step 2: Split Configuration
+                        │         │     └─► Step 3: Confirmation
+                        │         │
+                        │         └─► [ Add Member Screen ]
+                        │
+                        ├─► [ Group Creation Screen ]
+                        └─► [ Group Edit Screen ]
+```
+
+---
+
+## ⚡ Debt Simplification Algorithm
+
+Group expense sharing often leads to circular owing relationships (e.g., Alice owes Bob $20, Bob owes Charlie $20, Charlie owes Alice $20). SplitWell includes an in-house `SettlementCalculator` algorithm located in `domain/calculator/SettlementCalculator.kt` that reduces multi-member balance sheets to the absolute minimum number of financial transactions.
+
+### How it Works:
+
+1. **Calculate Net Balances**:
+   For each member $i$ in a group, calculate their net balance $B_i$:
+   $$B_i = \text{Total Paid by } i - \text{Total Share Owed by } i$$
+
+2. **Separate Debtors & Creditors**:
+   - Members with $B_i < 0$ are **Debtors** (they owe money).
+   - Members with $B_i > 0$ are **Creditors** (they are owed money).
+
+3. **Greedy Matching**:
+   Match the largest debtor with the largest creditor to settle debts sequentially, generating `SettlementSuggestion` objects until all net balances reach zero.
+
+#### Example Scenario:
+```text
+Unsimplified Transactions (6 transfers):
+  - Alex ➔ Bob ($50)
+  - Bob ➔ Charlie ($50)
+  - Charlie ➔ Alex ($20)
+  - David ➔ Alex ($30)
+  - David ➔ Bob ($20)
+
+SplitWell Simplified Result (2 transfers):
+  - Alex ➔ Charlie ($30)
+  - David ➔ Bob ($20)
+```
+
+---
+
+## 🔄 Data Synchronization Architecture
+
+SplitWell employs an **Offline-First Hybrid Synchronization** model to keep local data responsive while syncing seamlessly with remote REST services.
+
+```text
+                               ┌────────────────────────────────┐
+                               │     Jetpack Compose UI         │
+                               └───────────────▲────────────────┘
+                                               │ StateFlow
+                               ┌───────────────┴────────────────┐
+                               │           ViewModel            │
+                               └───────────────▲────────────────┘
+                                               │ UseCase
+                               ┌───────────────┴────────────────┐
+                               │          Repository            │
+                               └───────┬────────────────┬───────┘
+                                       │                │
+                         Read / Write  │                │ Remote API
+                                       ▼                ▼
+                           ┌──────────────┐          ┌──────────────┐
+                           │ SQLite Query │          │ Retrofit API │
+                           └──────────────┘          └──────────────┘
+                                  ▲                         ▲
+                                  └─────────┬───────────────┘
+                                            │
+                                  ┌───────────────────┐
+                                  │   SyncManager     │
+                                  │ (AppLifecycleObserver)│
+                                  └───────────────────┘
+```
+
+- **`SyncManager`**: Periodically reconciles local SQLite tables (`ExpenseQuery`, `TripManagerQuery`, `UserQuery`, `SettlementQuery`) with the remote backend.
+- **`AppLifecycleObserver`**: Automatically triggers background polling and synchronization whenever the application resumes from background state.
+
+---
+
+## 🌐 Remote REST API & Network Layer
+
+The app communicates with remote microservices using Retrofit 3.0 and OkHttp logging interceptors. Network requests are wrapped in `Resource<T>` sealed classes to represent loading, success, and error states uniformly across the UI.
+
+### API Endpoints Summary
+
+| Service | Interface | Responsibilities |
+| :--- | :--- | :--- |
+| **Expense API** | `ExpenseApiInterface` | Create, update, delete, and fetch group expense records and expense shares. |
+| **Group API** | `GroupApiInterface` | Create, update, and manage expense groups, member lists, and group details. |
+| **Invite API** | `InviteApiInterface` | Generate and validate group invite links and token previews. |
+| **Settlement API** | `SettlementApiInterface` | Record and retrieve settled debts between group members. |
+| **User API** | `UserApiInterface` | Manage user profiles, friend connections, and registration state. |
 
 ---
 
@@ -190,9 +303,5 @@ This project includes a continuous integration workflow powered by **GitHub Acti
 - Compiles the application and generates the debug APK artifact automatically.
 
 ---
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 Developed with ❤️ by **Rishi Chauhan**.
