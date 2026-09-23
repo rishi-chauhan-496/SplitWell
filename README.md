@@ -22,7 +22,6 @@
 - [Data Synchronization Architecture](#-data-synchronization-architecture)
 - [Remote REST API & Network Layer](#-remote-rest-api--network-layer)
 - [Project Structure](#-project-structure)
-- [Deep Linking & Invites](#-deep-linking--invites)
 - [Setup & Installation](#-setup--installation)
 - [CI/CD Pipeline](#-cicd-pipeline)
 - [Official Documentation](#-official-documentation)
@@ -51,9 +50,6 @@
 - ⚡ **Optimal Debt Simplification**
   - Integrated `SettlementCalculator` algorithm to simplify multi-party group debts into minimal direct transactions.
   - Track pending vs. completed settlements with a clear transaction history.
-
-- 🔗 **Deep Linking & Instant Group Invites**
-  - Custom URI scheme (`splitwell://invite`) and Web App Links (`https://pratikprajapati.cloud/invite/`) for instant group sharing and onboarding.
 
 ---
 
@@ -242,17 +238,6 @@ com.app.splitwell/
     ├── profile/                # User Profile View & Edit Screens
     └── theme/                  # Theme Configuration, Typography, and Color Palettes
 ```
-
----
-
-## 🔗 Deep Linking & Invites
-
-SplitWell supports deep links for inviting members directly into groups:
-
-- **Web Link Scheme**: `https://pratikprajapati.cloud/invite/{token}`
-- **App Scheme**: `splitwell://invite?token={token}`
-
-When a user taps an invite link, the app automatically navigates to `InvitePreviewScreen`, fetching group information before allowing the user to join with one click.
 
 ---
 
